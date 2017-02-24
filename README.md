@@ -14,6 +14,7 @@ Goals :
  1) Existing models in the old system should implement the basemodel from the syncadapter
  
  2) unplug the connection between controller and api in the old setup and connect the adapter in betwen controller and api
-                                mobile client ----> controller ----> adapter ----> api ----> network ----> web server
+ 
+                            mobile client ----> controller ----> adapter ----> api ----> network ----> web server
  
  
