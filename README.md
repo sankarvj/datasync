@@ -13,7 +13,21 @@ Goals :
  
  1) Existing models in the old system should implement the basemodel from the syncadapter
  
- 2) unplug the connection between controller and api in the old setup and connect the adapter in betwen controller and api
+                            type Basemodel interface {
+                            	//Key
+                            	getKey() int64
+                            	//Id
+                            	getId() int64
+                            	setId(id int64)
+                            	//Sync
+                            	getSynced() bool
+                            	setSynced(sync bool)
+                            	//Time
+                            	getUpdatedat() int64
+                            }
+                            
+
+ 3) Unplug the connection between controller and api in the old setup and connect the adapter in betwen controller and api
  
                             mobile client ----> controller ----> adapter ----> api ----> network ----> web server
  
