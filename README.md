@@ -16,7 +16,7 @@
                     
 #How to implement the sync adapter with the existing system ?
  
-    1) Existing models in the client system should embed the localmodel from the syncadapter
+    1) Existing models in the client system should inherit the localmodel from the syncadapter
  
                             type Localmodel struct {
                             	Id      int64    //local id
@@ -36,7 +36,37 @@
                             }
                             
 
+    2) So that all the methods declared under Localmodel is promoted to be accessed via other models inherit it
+ 
+                            ticket.MarkAsLocal()
+                            ticket.UpdateLocalId(id int64)
+                            etc...
+                            
+    3) Invidual models can override promoted methods in case if any modification needed
+                            
+                            func (obj *Localmodel) UpdateLocalId(id int64) {
+                            	obj.Id = id
+                            }
+                            
+                            func (obj *Ticket) UpdateLocalId(id int64) {
+                            	obj.Id = id * 10
+                            }
+                            
+    4) 
+    
+    
+#Create
 
- 
- 
- 
+    1) create the object
+    2) store it in the db
+    3) send the response back to client
+    4) hit the api 
+    5) onsuccess - update serverid and forign ids, set synced as true and call client with response updated 
+    6) onerror   - if network error do nothing, if server fails delete the row and update the client
+
+#Update
+
+#Get
+
+#Delete
+
