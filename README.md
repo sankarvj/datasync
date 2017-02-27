@@ -1,6 +1,29 @@
 #Sync adapter
 
-    This project has three parts mobile client, sync adapter and a web server 
+    This project helps maintain & sync localdata with the remote server
+    It stores data locally and update the database when something changes in the remote server.
+
+    We categorize sync logic into : general sync, specific sync, remote sync and trash sync
+
+    Specific Sync : sync a specific row from the local db to the remote server 
+        (All api requests will come under this)
+    General Sync : sync data from the local db to the remote server on the event of network toggle / Time based / Manual user req
+        (Whatever fails in the "Specific Sync" will be aggregated and sync in one shot)
+    Remote Sync : sync on request from the server 
+        (Sync via push notification)
+    Trash Sync : sync deleted rows from the local to remote and vice versa 
+        (It uses some peculiar logics from the rest of the above)
+        
+    In otherways they are categorized by CRUD
+    A) Specific Sync - (POST,PUT) (LOCAL ---> SERVER)
+    B) General Sync - (POST,PUT) (LOCAL --> SERVER)
+    C) Remote Sync - (POST,PUT) (SERVER --> LOCAL)
+    D) Specific Sync - (GET) (LOCAL ---> SERVER) && (SERVER --> LOCAL)
+    E) Trash Sync - (DELETE) (LOCAL ---> SERVER) && (SERVER --> LOCAL)
+
+    So basically : Whatever missed in A will be handled by B
+                   Whatever missed in C will be handled by D
+    
 
 #Goals: 
 
@@ -9,6 +32,13 @@
                 live setup    : mobile client ----> controller ----> api ----> network ----> web server
                 offline setup : mobile client ----> controller ----> adapter ----> api ----> network ----> web server
                 
+#Problems
+
+    1)  Forign key reference in the server table should be modified with its corresponding local_id.
+        Also upon the server request, the local instance should bring back remote id for the api.
+        
+    2)  
+
 #Rule of thumb
 
     1) Server table should contain : id & updated column
@@ -51,16 +81,15 @@
                             func (obj *Ticket) UpdateLocalId(id int64) {
                             	obj.Id = id * 10
                             }
-                            
-    4) 
     
-    
+#How it works 
+
 #Create
 
     1) create the object
     2) store it in the db
     3) send the response back to client
-    4) hit the api 
+    4) hit the api with the created local object
     5) onsuccess - update serverid and forign ids, set synced as true and call client with response updated 
     6) onerror   - if network error do nothing, if server fails delete the row and update the client
 
