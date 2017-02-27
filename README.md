@@ -46,7 +46,21 @@
 #Rule of thumb
 
     1) Server table should contain : id & updated column
+
     2) Client table must implement "localmodel" struct
+
+    3) If a column in a table references a id from the other table than that column must be tagged like the below structure 
+    
+                            type Note struct {
+                            	Ticketid int64 `rt:"trips" rk:"id"`
+                            	Name     string
+                            	Desc     string
+                            	created  time.Time
+                            	adapter.Localmodel
+                            }
+                            
+        Note : ticketid column of notes table references id column of Ticket table.
+    
                     
 #How to implement the sync adapter with the existing system ?
  
