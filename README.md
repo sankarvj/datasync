@@ -34,7 +34,7 @@
     
     2) All local_id to server_id and server_id to local_id conversions should happen in one place inside the adapter.
     
-    3) In the above pipe, before the adapter the ids should maintain local scope and after that ids should maintain server scope.
+    3) In the above pipe, before the "adapter" the object should maintain local scope and after that the object should maintain server scope.
                 
 #Problems
 
