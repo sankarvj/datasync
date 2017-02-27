@@ -31,18 +31,22 @@
  
                 live setup    : mobile client ----> controller ----> api ----> network ----> web server
                 offline setup : mobile client ----> controller ----> adapter ----> api ----> network ----> web server
+    
+    2) All local_id to server_id and server_id to local_id conversions should happen in one place inside the adapter.
+    
+    3) In the above pipe, before the adapter the ids should maintain local scope and after that ids should maintain server scope.
                 
 #Problems
 
     1)  Forign key reference in the server table should be modified with its corresponding local_id.
-        Also upon the server request, the local instance should bring back remote id for the api.
+        Also upon the api request, the local instance should bring back remote id to form the api params.
         
-    2)  
+    2)  Code repeatation during each request should be handled.
 
 #Rule of thumb
 
     1) Server table should contain : id & updated column
-    2) Client table must implement localmodel struct
+    2) Client table must implement "localmodel" struct
                     
 #How to implement the sync adapter with the existing system ?
  
@@ -65,7 +69,6 @@
                             	adapter.Localmodel //Embed localmodel
                             }
                             
-
     2) So that all the methods declared under Localmodel is promoted to be accessed via other models inherit it
  
                             ticket.MarkAsLocal()
