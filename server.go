@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"gitlab.com/vjopensrc/datasync/goclient"
+	"gitlab.com/vjopensrc/datasync/goclient/controller"
+	"gitlab.com/vjopensrc/datasync/goclient/model"
 )
 
 func main() {
-	frontendAdapter := goclient.FrontendAdapter{}
-	goclient.RegisterFrontendAdapter(frontendAdapter)
+	frontendAdapter := model.FrontendAdapter{}
+	model.RegisterFrontendAdapter(frontendAdapter)
 
 	fmt.Println("__________________________Ticket Create____________________________")
-	goclient.TicketCreateHandler("subject 1", "description 1")
+	controller.TicketCreateHandler("subject 1", "description 1")
 }

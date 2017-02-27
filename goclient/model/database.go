@@ -1,4 +1,4 @@
-package goclient
+package model
 
 import (
 	"database/sql"
@@ -113,7 +113,7 @@ func (f FrontendAdapter) DatabasePath() string {
 
 var db *sql.DB
 
-func initDB() *sql.DB {
+func InitDB() *sql.DB {
 	var err error
 
 	if db == nil {
@@ -151,19 +151,25 @@ func createTable(db *sql.DB) {
 	}
 }
 
-func storeTicket(db *sql.DB, ticket *Ticket) {
+func StoreTicket(ticket *Ticket) int64 {
+	db := InitDB()
 	stmt, err := db.Prepare(sql_ticket_insert_query)
 	defer stmt.Close()
 	if err != nil {
 		log.Println("database prepare insert ticket sql err ", err)
-		return
+		return 0
 	}
 
 	var result sql.Result
-	result, err = stmt.Exec(ticket.id, ticket.subject, ticket.desc, ticket.requester, ticket.agent, ticket.updated, ticket.created, ticket.synced)
+	result, err = stmt.Exec(ticket.Id, ticket.Subject, ticket.Desc, ticket.requester, ticket.agent, ticket.Updated, ticket.created, ticket.Synced)
 	if err != nil {
 		log.Println("database insert ticket sql err ", err)
-		return
+		return 0
 	}
-	ticket.Id, _ = result.LastInsertId()
+	insertedId, err := result.LastInsertId()
+	if err != nil {
+		return 0
+	} else {
+		return insertedId
+	}
 }
