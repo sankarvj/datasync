@@ -18,7 +18,7 @@
     A) Specific Sync - (POST,PUT) (LOCAL ---> SERVER)
     B) General Sync - (POST,PUT) (LOCAL --> SERVER)
     C) Remote Sync - (POST,PUT) (SERVER --> LOCAL)
-    D) Specific Sync - (GET) (LOCAL ---> SERVER) && (SERVER --> LOCAL)
+    D) Specific Sync - (GET)  (SERVER --> LOCAL)
     E) Trash Sync - (DELETE) (LOCAL ---> SERVER) && (SERVER --> LOCAL)
 
     So basically : Whatever missed in A will be handled by B
