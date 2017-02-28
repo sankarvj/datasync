@@ -1,8 +1,5 @@
 package network
 
-
-package goclient
-
 import (
 	"bytes"
 	"database/sql"
@@ -34,7 +31,6 @@ type NetworkClient struct {
 	AuthToken string
 	Method    string
 }
-
 
 func makeCallToServer(db *sql.DB, method string, path string, jsonbody []byte) Response {
 	networkClient := formNetworkClient(db, method, path)
@@ -106,6 +102,3 @@ func structToStr(responseStruct interface{}) string {
 	panicError(err)
 	return string(out)
 }
-
-
-

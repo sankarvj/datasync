@@ -2,6 +2,7 @@
 package adapter
 
 import (
+	"log"
 	"time"
 )
 
@@ -33,6 +34,8 @@ func (obj *Localmodel) MarkAsLocal() {
 
 func (obj *Localmodel) UpdateLocalId(id int64) {
 	obj.Id = id
+
+	log.Println(" references ", obj.References)
 }
 
 func (obj *Localmodel) PushReferences(ref_table string, ref_key string) {

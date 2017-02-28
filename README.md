@@ -1,66 +1,64 @@
 #Sync adapter
 
-    This project helps maintain & sync localdata with the remote server
-    It stores data locally and update the database when something changes in the remote server.
+    A cross platform utility encapsulates the code for data sync between the client and the remote server.
 
-    We categorize sync logic into : general sync, specific sync, remote sync and trash sync
-
-    Specific Sync : sync a specific row from the local db to the remote server 
-        (All api requests will come under this)
-    General Sync : sync data from the local db to the remote server on the event of network toggle / Time based / Manual user req
-        (Whatever fails in the "Specific Sync" will be aggregated and sync in one shot)
-    Remote Sync : sync on request from the server 
+    #Datasync between servers is taken care of : General sync, Specific sync, Remote sync and Erase sync.
+    
+    Specific Sync : Run a sync adapter when data changes on the device.
+        (This option is straightforward to implement. All api requests will come under this.)
+    General Sync : Allows you to automate data transfer based on a variety of criteria, including network changes, elapsed time, or time of day.
+        (Whatever fails in the "Specific Sync" would be aggregated and it will be synced in one shot. )
+    Remote Sync : Run the sync adapter in response to a message from a server, indicating that server-based data has changed.
         (Sync via push notification)
-    Trash Sync : sync deleted rows from the local to remote and vice versa 
+    Erase Sync : Sync deleted rows from the local to remote and vice versa 
         (It uses some peculiar logics from the rest of the above)
         
     In otherways they are categorized by CRUD
-    A) Specific Sync - (POST,PUT) (LOCAL ---> SERVER)
+    A) Specific Sync - (POST,PUT) (LOCAL --> SERVER)
     B) General Sync - (POST,PUT) (LOCAL --> SERVER)
     C) Remote Sync - (POST,PUT) (SERVER --> LOCAL)
     D) Specific Sync - (GET)  (SERVER --> LOCAL)
-    E) Trash Sync - (DELETE) (LOCAL ---> SERVER) && (SERVER --> LOCAL)
+    E) Erase Sync - (DELETE) (LOCAL --> SERVER) && (SERVER --> LOCAL)
 
     So basically : Whatever missed in A will be handled by B
                    Whatever missed in C will be handled by D
     
-
-#Goals: 
-
-    1) The sync adapter should act as a pluggable adapter to an already operating system. At some point of time if we add/remove the adapter, the old code should work with minimal change. 
+#Goals: (Few points taken from the android sync adater)
+    
+    1) Plug-in architecture. The sync adapter should act as a adapter to an already operating system. At some point if I remove the adapter, the old code should work. I mean it should hit the API directly and bring back the results.
  
                 live setup    : mobile client ----> controller ----> api ----> network ----> web server
                 offline setup : mobile client ----> controller ----> adapter ----> api ----> network ----> web server
+
+    2) Automated network checking & Automated execution
+
+    3) Remote Sync tend to send the push notification to all devices at the same time. This situation can cause multiple instance of your sync adapter to run at the same time, causing server and network overload. Avoid this situation by starting the "Remote Sync" specific to a device.
     
-    2) All local_id to server_id and server_id to local_id conversions should happen in one place inside the adapter.
+    4) All local_id to server_id and server_id to local_id conversions should happen in one place inside the adapter.
     
-    3) In the above pipe, before the "adapter" the object should maintain local scope and after that the object should maintain server scope.
+    5) In the above pipe, before the "adapter" the object should maintain local scope and after that the object should maintain server scope.
+
+    6) Android sync adapter is only in charge of running your code, it has no idea how your data should be synced with the server. But this sync adapter is somewhat intelligent since it knows some basic context of your model and by using that it should take care sync operations of its own.
+    
                 
 #Problems
 
-    1)  Forign key reference in the server table should be modified with its corresponding local_id.
-        Also upon the api request, the local instance should bring back remote id to form the api params.
+    1) Forign key reference in the server table should be modified with its corresponding local_id. Upon the api request, the local instance should bring back remote id to form the api params.
         
-    2)  Code repeatation during each request should be handled.
+    2) Calculate device specific time to run "Remote Sync" at different intervals across devices to reduce server load.
 
-#Rule of thumb
+    3) Sync attachements have problems such as deleting the local copy,rename and client validation has to be done. 
 
-    1) Server table should contain : id & updated column
+    4) Deciding the priority of action (Local/Server) during "General Sync". Right now it will give the priority to local
 
-    2) Client table must implement "localmodel" struct
+#Rules of thumb
 
-    3) If a column in a table references a id from the other table than that column must be tagged like the below structure 
-    
-                            type Note struct {
-                            	Ticketid int64 `rt:"trips" rk:"id"`
-                            	Name     string
-                            	Desc     string
-                            	created  time.Time
-                            	adapter.Localmodel
-                            }
-                            
-        Note : ticketid column of notes table references id column of Ticket table.
-    
+    1) Server table should contain id & updated column
+
+    2) Client model must implement "localmodel" struct (see detail in #HowToImplementSection1)
+
+    3) Client model must add tags to the column if any that column reference other table columns (see detail in #HowToImplementSection4)
+
                     
 #How to implement the sync adapter with the existing system ?
  
@@ -98,6 +96,18 @@
                             func (obj *Ticket) UpdateLocalId(id int64) {
                             	obj.Id = id * 10
                             }
+
+    4) If a column in a table references a id from the other table than that column must be tagged like the below structure 
+    
+                            type Note struct {
+                                Ticketid int64 `rt:"trips" rk:"id"`
+                                Name     string
+                                Desc     string
+                                created  time.Time
+                                adapter.Localmodel
+                            }
+                            
+        Note : ticketid column of notes table references id column of Ticket table. 
     
 #How it works 
 

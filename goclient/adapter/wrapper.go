@@ -34,7 +34,9 @@ func CreateLogic(fn interface{}, params ...interface{}) {
 				field := objtype.Field(i)
 				reference_table = field.Tag.Get("rt")
 				reference_key = field.Tag.Get("rk")
-				shaper.PushReferences(reference_table, reference_key)
+				if reference_table != "" && reference_key != "" {
+					shaper.PushReferences(reference_table, reference_key)
+				}
 			}
 		}
 	}
