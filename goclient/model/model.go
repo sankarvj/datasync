@@ -11,13 +11,13 @@ type Ticket struct {
 	requester string
 	agent     string
 	created   time.Time
-	adapter.Localmodel
+	adapter.BaseModel
 }
 
 type Note struct {
-	Ticketid int64 `rt:"trips" rk:"id"`
+	Ticketid int64 `rt:"tickets" rk:"id"`
 	Name     string
 	Desc     string
 	created  time.Time
-	adapter.Localmodel
+	adapter.BaseModel
 }

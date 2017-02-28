@@ -11,9 +11,10 @@ func TicketCreateHandler(subject string, desc string) {
 	ticket.Subject = subject
 	ticket.Desc = desc
 
-	//store it locally
-	adapter.CreateLogic(model.StoreTicket, ticket)
+	//store it local
+	adapter.CreateLocal(model.StoreTicket, ticket)
 
-	//call api
-
+	//server call
+	db := model.InitDB()
+	adapter.ProcessForRemote(db, ticket)
 }

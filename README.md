@@ -1,8 +1,9 @@
+
 #Sync adapter
 
     A cross platform utility encapsulates the code for data sync between the client and the remote server.
 
-    #Datasync between servers is taken care of : General sync, Specific sync, Remote sync and Erase sync.
+    You have the following options for running your sync adapter: General sync, Specific sync, Remote sync and Erase sync.
     
     Specific Sync : Run a sync adapter when data changes on the device.
         (This option is straightforward to implement. All api requests will come under this.)
@@ -39,6 +40,8 @@
     5) In the above pipe, before the "adapter" the object should maintain local scope and after that the object should maintain server scope.
 
     6) Android sync adapter is only in charge of running your code, it has no idea how your data should be synced with the server. But this sync adapter is somewhat intelligent since it knows some basic context of your model and by using that it should take care sync operations of its own.
+
+    7) If someone break rules handle it gracefully and intimate user with meaningful log message 
     
                 
 #Problems
@@ -51,20 +54,27 @@
 
     4) Deciding the priority of action (Local/Server) during "General Sync". Right now it will give the priority to local
 
-#Rules of thumb
+    5) Too many rules, reduce it
+
+
+#5Rules to follow
 
     1) Server table should contain id & updated column
 
-    2) Client model must implement "localmodel" struct (see detail in #HowToImplementSection1)
+    2) Client table should contain id,key & updated column (Could remove this check if a utility added to create tables from the model)
 
-    3) Client model must add tags to the column if any that column reference other table columns (see detail in #HowToImplementSection4)
+    3) Client tablename be the plural of its model name & colname should be as same as model field name (Could remove this check if a utility added to create tables from the model)
+
+    4) Client model must implement "basemodel" struct (see detail in #HowToImplementSection1)
+
+    5) Client model must add tags to the column if that column has any reference (see detail in #HowToImplementSection4)
 
                     
 #How to implement the sync adapter with the existing system ?
  
-    1) Existing models in the client system should inherit the localmodel from the syncadapter
+    1) Existing models in the client system should inherit the basemodel from the syncadapter
  
-                            type Localmodel struct {
+                            type BaseModel struct {
                             	Id      int64    //local id
                             	Key     int64    //server id
                             	Updated int64    //last updated time
@@ -78,10 +88,10 @@
                             	requester string
                             	agent     string
                             	created   time.Time
-                            	adapter.Localmodel //Embed localmodel
+                            	adapter.BaseModel //Embed BaseModel
                             }
                             
-    2) So that all the methods declared under Localmodel is promoted to be accessed via other models inherit it
+    2) So that all the methods declared under BaseModel is promoted to be accessed via other models inherit it
  
                             ticket.MarkAsLocal()
                             ticket.UpdateLocalId(id int64)
@@ -89,7 +99,7 @@
                             
     3) Invidual models can override promoted methods in case if any modification needed
                             
-                            func (obj *Localmodel) UpdateLocalId(id int64) {
+                            func (obj *BaseModel) UpdateLocalId(id int64) {
                             	obj.Id = id
                             }
                             
@@ -104,7 +114,7 @@
                                 Name     string
                                 Desc     string
                                 created  time.Time
-                                adapter.Localmodel
+                                adapter.BaseModel
                             }
                             
         Note : ticketid column of notes table references id column of Ticket table. 
