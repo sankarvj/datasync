@@ -2,16 +2,11 @@ package network
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"mime/multipart"
 	"net/http"
-	"os"
 )
-
-var clientinfolistener ClientInfoListener
 
 const (
 	DOMAIN_NAME = "localhost:8080"
@@ -32,8 +27,8 @@ type NetworkClient struct {
 	Method    string
 }
 
-func makeCallToServer(db *sql.DB, method string, path string, jsonbody []byte) Response {
-	networkClient := formNetworkClient(db, method, path)
+func makeCallToServer(method string, path string, jsonbody []byte) Response {
+	networkClient := formNetworkClient(method, path)
 	//Send Request and Parse Json
 	return requestServer(networkClient, APPLICATION_JSON, bytes.NewBuffer(jsonbody))
 }
@@ -89,16 +84,17 @@ func requestServer(networkClient *NetworkClient, content_type string, bodybytes 
 	return *s
 }
 
-func formNetworkClient(db *sql.DB, method string, path string) *NetworkClient {
+func formNetworkClient(method string, path string) *NetworkClient {
 	networkClient := new(NetworkClient)
 	networkClient.Url = "http://" + DOMAIN_NAME + "/" + path
-	networkClient.AuthToken = readInfoByKey(db, KeyAuthtoken, nil)
 	networkClient.Method = method
 	return networkClient
 }
 
 func structToStr(responseStruct interface{}) string {
 	out, err := json.Marshal(responseStruct)
-	panicError(err)
+	if err != nil {
+		log.Println("can't marshal response")
+	}
 	return string(out)
 }

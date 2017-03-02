@@ -11,5 +11,8 @@ func main() {
 	model.RegisterFrontendAdapter(frontendAdapter)
 
 	fmt.Println("__________________________Ticket Create____________________________")
-	controller.TicketCreateHandler("subject 1", "description 1")
+	//controller.TicketCreateHandler("subject 1", "description 1")
+
+	fmt.Println("__________________________Note Create____________________________")
+	controller.NoteCreateHandler("note name ", "note description", 108)
 }

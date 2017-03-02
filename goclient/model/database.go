@@ -173,3 +173,26 @@ func StoreTicket(ticket *Ticket) int64 {
 		return insertedId
 	}
 }
+
+func StoreNote(note *Note) int64 {
+	db := InitDB()
+	stmt, err := db.Prepare(sql_note_insert_query)
+	defer stmt.Close()
+	if err != nil {
+		log.Println("database prepare insert note sql err ", err)
+		return 0
+	}
+
+	var result sql.Result
+	result, err = stmt.Exec(note.Id, note.Ticketid, note.Name, note.Desc, note.Updated, note.created, note.Synced)
+	if err != nil {
+		log.Println("database insert note sql err ", err)
+		return 0
+	}
+	insertedId, err := result.LastInsertId()
+	if err != nil {
+		return 0
+	} else {
+		return insertedId
+	}
+}

@@ -7,7 +7,7 @@ import (
 
 type Ticket struct {
 	Subject   string
-	Desc      string `rt:"trips" rk:"id"`
+	Desc      string `json:"Description"`
 	requester string
 	agent     string
 	created   time.Time
@@ -17,7 +17,7 @@ type Ticket struct {
 type Note struct {
 	Ticketid int64 `rt:"tickets" rk:"id"`
 	Name     string
-	Desc     string
+	Desc     string `json:"Description"`
 	created  time.Time
 	adapter.BaseModel
 }
