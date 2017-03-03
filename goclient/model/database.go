@@ -196,3 +196,24 @@ func StoreNote(note *Note) int64 {
 		return insertedId
 	}
 }
+
+func ReadTickets() []Ticket {
+	db := InitDB()
+	sql_readall := "select * from tickets"
+	rows, err := db.Query(sql_readall)
+	if err != nil {
+		log.Println("Wow this is a error ", err)
+	}
+	defer rows.Close()
+
+	var result []Ticket
+	for rows.Next() {
+		ticket := &Ticket{}
+		err = rows.Scan(&ticket.Id, &ticket.Key, &ticket.Subject, &ticket.Desc, &ticket.requester, &ticket.agent, &ticket.Updated, &ticket.created, &ticket.Synced)
+		if err != nil {
+			log.Println("Wow this is a error ", err)
+		}
+		result = append(result, *ticket)
+	}
+	return result
+}

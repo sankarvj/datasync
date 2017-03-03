@@ -6,8 +6,9 @@ import (
 	"log"
 )
 
-func Sample(ticket *model.Ticket) {
+func TicketAPI(ticket *model.Ticket) {
 	jsonbody, err := json.Marshal(ticket)
+	log.Println("jsonbody ::: ", jsonbody)
 	if err != nil {
 		log.Println("Can't marshal ticket")
 		return
@@ -20,13 +21,46 @@ func Sample(ticket *model.Ticket) {
 	}()
 	<-done
 
-	ticket, err = model.ParseTicket(response.Outcome[0])
+	*ticket, err = model.ParseTicket(response.Outcome[0])
 
 	if err != nil {
 		log.Println("Error parsing ticket")
 	}
 
 	log.Println("ticket ", ticket)
+}
+
+func NoteAPI(note *model.Note) {
+	jsonbody, err := json.Marshal(note)
+	if err != nil {
+		log.Println("Can't marshal note")
+		return
+	}
+	done := make(chan bool)
+	var response Response
+	go func() {
+		response = makeCallToServer(method_post, "notes", jsonbody)
+		done <- true
+	}()
+	<-done
+
+	*note, err = model.ParseNote(response.Outcome[0])
+
+	if err != nil {
+		log.Println("Error parsing note")
+	}
+}
+
+func TicketlistAPI() []model.Ticket {
+	done := make(chan bool)
+	var response Response
+	go func() {
+		response = makeCallToServer(method_get, "tickets", nil)
+		done <- true
+	}()
+	<-done
+	tickets, _ := model.ParseTickets(response.Outcome[0])
+	return tickets
 }
 
 // func createTicketAPI(ticket *model.Ticket) {
