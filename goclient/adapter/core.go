@@ -11,6 +11,7 @@ type BaseModel struct {
 //Cooker interface
 type Cooker interface {
 	MarkAsLocal()
+	MarkAsPureLocal()
 	UpdateLocalId(id int64)
 	GetLocalId() int64
 }
@@ -18,12 +19,16 @@ type Cooker interface {
 //Cooker implementations
 func (basemodel *BaseModel) MarkAsLocal() {
 	if basemodel.Id == 0 { //storing ticket originally created at client
-		basemodel.Synced = false
-		basemodel.Updated = currentTime()
+		basemodel.MarkAsPureLocal()
 	} else { //storing ticket originally created at server
 		basemodel.Synced = true
 	}
 
+}
+
+func (basemodel *BaseModel) MarkAsPureLocal() {
+	basemodel.Synced = false
+	basemodel.Updated = currentTime()
 }
 
 func (basemodel *BaseModel) UpdateLocalId(id int64) {

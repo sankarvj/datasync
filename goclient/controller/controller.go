@@ -20,9 +20,34 @@ func TicketCreateHandler(subject string, desc string) {
 	//localticket := *ticket //save local instance before passing it to cook for server
 	specificsync.CookForRemote(ticket)
 	//call api while the object it hot
-	network.TicketAPI(ticket)
-	//cool it down
-	specificsync.CoolItDown(ticket.Id, ticket.Updated)
+	if success := network.TicketAPI(ticket); success {
+		//cool it down
+		specificsync.CoolItDown(ticket.Id, ticket.Updated)
+	}
+}
+
+func TicketEditHandler(subject string, desc string, ticketid int64) {
+	//create a ticket object
+	ticket := new(model.Ticket)
+	ticket.Id = ticketid
+	ticket.Subject = subject
+	ticket.Desc = desc
+
+	specificsync := adapter.CreateSpecificSyncer(model.InitDB())
+	//store it local
+	specificsync.UpdateLocal(model.UpdateTicket, ticket, ticketid)
+	//server annex
+	//localticket := *ticket //save local instance before passing it to cook for server
+	log.Println("local id ", ticket.Id)
+	specificsync.CookForRemote(ticket)
+	log.Println("server id ", ticket.Id)
+
+	//call api while the object is hot
+	if success := network.TicketEditAPI(ticket); success {
+		//cool it down
+		specificsync.CoolItDown(ticket.Id, ticket.Updated)
+	}
+
 }
 
 func NoteCreateHandler(name string, desc string, ticketid int64) {
@@ -43,9 +68,11 @@ func NoteCreateHandler(name string, desc string, ticketid int64) {
 	log.Println("server id ", note.Id)
 	log.Println("server ticketid ", note.Ticketid)
 	//call api while it is hot
-	network.NoteAPI(note)
-	//update local with key,sync and updatedtime
-	specificsync.CoolItDown(note.Id, note.Updated)
+	if success := network.NoteAPI(note); success {
+		//update local with key,sync and updatedtime
+		specificsync.CoolItDown(note.Id, note.Updated)
+	}
+
 }
 
 func TicketListHandler() {

@@ -7,12 +7,11 @@ import (
 	"strconv"
 )
 
-func TicketAPI(ticket *model.Ticket) {
+func TicketAPI(ticket *model.Ticket) bool {
 	jsonbody, err := json.Marshal(ticket)
-	log.Println("jsonbody ::: ", jsonbody)
 	if err != nil {
 		log.Println("Can't marshal ticket")
-		return
+		return false
 	}
 	done := make(chan bool)
 	var response Response
@@ -26,16 +25,43 @@ func TicketAPI(ticket *model.Ticket) {
 
 	if err != nil {
 		log.Println("Error parsing ticket")
+		return false
 	}
 
 	log.Println("ticket ", ticket)
+	return true
 }
 
-func NoteAPI(note *model.Note) {
+func TicketEditAPI(ticket *model.Ticket) bool {
+	jsonbody, err := json.Marshal(ticket)
+	if err != nil {
+		log.Println("Can't marshal ticket")
+		return false
+	}
+	done := make(chan bool)
+	var response Response
+	go func() {
+		response = makeCallToServer(method_put, "tickets", jsonbody)
+		done <- true
+	}()
+	<-done
+
+	*ticket, err = model.ParseTicket(response.Outcome[0])
+
+	if err != nil {
+		log.Println("Error parsing ticket")
+		return false
+	}
+
+	log.Println("ticket ", ticket)
+	return true
+}
+
+func NoteAPI(note *model.Note) bool {
 	jsonbody, err := json.Marshal(note)
 	if err != nil {
 		log.Println("Can't marshal note")
-		return
+		return false
 	}
 	done := make(chan bool)
 	var response Response
@@ -49,7 +75,9 @@ func NoteAPI(note *model.Note) {
 
 	if err != nil {
 		log.Println("Error parsing note")
+		return false
 	}
+	return true
 }
 
 func TicketlistAPI() []model.Ticket {

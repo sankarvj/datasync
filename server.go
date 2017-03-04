@@ -20,5 +20,9 @@ func main() {
 	//controller.TicketListHandler()
 
 	fmt.Println("__________________________Note List____________________________")
-	controller.NoteListHandler(234)
+	//controller.NoteListHandler(234)
+
+	fmt.Println("__________________________Ticket Edit____________________________")
+	controller.TicketEditHandler("vijay", "sankar", 233)
+
 }

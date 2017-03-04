@@ -62,11 +62,40 @@ func (s *Specificsync) MakeLocal(fn interface{}, params ...interface{}) {
 
 }
 
+func (s *Specificsync) UpdateLocal(fn interface{}, params ...interface{}) {
+	var cooker Cooker
+	f := reflect.ValueOf(fn)
+	if f.Type().NumIn() != len(params) {
+		panic("incorrect number of parameters!")
+	}
+	inputs := make([]reflect.Value, len(params))
+	for k, in := range params {
+		if inImplementsCooker(in) {
+			cooker = in.(Cooker)
+		}
+		inputs[k] = reflect.ValueOf(in)
+	}
+
+	if cooker != nil {
+		//Update synced and update values in the local object
+		cooker.MarkAsPureLocal()
+	} else {
+		log.Println("datasync skips since there is no params passed to this func implements cooker!")
+	}
+	//call the corresponding method
+	f.Call(inputs)
+}
+
 //Pass by value
 func (s *Specificsync) CookForRemote(in interface{}) {
 	if inImplementsCooker(in) {
 		if s.Tablename == "" { //otherwise user might have set the tablename manually we don't need to set it
 			s.Tablename = strings.ToLower(reflect.TypeOf(in).Elem().Name() + "s")
+		}
+
+		if s.Localid == 0 {
+			cooker := in.(Cooker)
+			s.Localid = cooker.GetLocalId()
 		}
 
 		serverid := serverVal(s.DBInst, s.Tablename, strconv.FormatInt(s.Localid, 10))

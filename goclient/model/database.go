@@ -106,7 +106,7 @@ var sql_ticket_update = `
 		Agent = ?,
 		Updated = ?,
 		Created = ?,
-		Synced = ?,
+		Synced = ? 
 		WHERE id = ?
 	`
 
@@ -116,7 +116,7 @@ var sql_note_update = `
 		Desc = ?,
 		Updated = ?,
 		Created = ?,
-		Synced = ?,
+		Synced = ? 
 		WHERE id = ?
 	`
 
