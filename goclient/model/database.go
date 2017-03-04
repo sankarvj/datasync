@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
+	"strconv"
 )
 
 //**********Create Quries**********
@@ -97,6 +98,28 @@ var sql_attachment_insert_query = `
 	) values(?, ?, ?, ?, ?, ?, ?)
 	`
 
+var sql_ticket_update = `
+	UPDATE tickets set 
+		Subject = ?,
+		Desc = ?,
+		Requester = ?,
+		Agent = ?,
+		Updated = ?,
+		Created = ?,
+		Synced = ?,
+		WHERE id = ?
+	`
+
+var sql_note_update = `
+	UPDATE notes set 
+		Name = ?,
+		Desc = ?,
+		Updated = ?,
+		Created = ?,
+		Synced = ?,
+		WHERE id = ?
+	`
+
 var frontendAdapter FrontendAdapter
 
 //Adapter talks with frontend and get back info needed for goclient
@@ -174,6 +197,32 @@ func StoreTicket(ticket *Ticket) int64 {
 	}
 }
 
+func UpdateTicket(ticket *Ticket, localid int64) {
+	db := InitDB()
+	log.Println("########## update ticket ###########")
+	stmt, err := db.Prepare(sql_ticket_update)
+	if err != nil {
+		log.Println("error updating ticket : ", err)
+	}
+	_, err = stmt.Exec(ticket.Subject, ticket.Desc, ticket.requester, ticket.agent, ticket.Updated, ticket.created, ticket.Synced, localid)
+	if err != nil {
+		log.Println("error updating ticket exec: ", err)
+	}
+}
+
+func UpdateNote(note *Note, localid int64) {
+	db := InitDB()
+	log.Println("########## update note ###########")
+	stmt, err := db.Prepare(sql_note_update)
+	if err != nil {
+		log.Println("error updating note : ", err)
+	}
+	_, err = stmt.Exec(note.Name, note.Desc, note.Updated, note.created, note.Synced, localid)
+	if err != nil {
+		log.Println("error updating note exec: ", err)
+	}
+}
+
 func StoreNote(note *Note) int64 {
 	db := InitDB()
 	stmt, err := db.Prepare(sql_note_insert_query)
@@ -202,7 +251,7 @@ func ReadTickets() []Ticket {
 	sql_readall := "select * from tickets"
 	rows, err := db.Query(sql_readall)
 	if err != nil {
-		log.Println("Wow this is a error ", err)
+		log.Println("ticket read query error ", err)
 	}
 	defer rows.Close()
 
@@ -211,9 +260,30 @@ func ReadTickets() []Ticket {
 		ticket := &Ticket{}
 		err = rows.Scan(&ticket.Id, &ticket.Key, &ticket.Subject, &ticket.Desc, &ticket.requester, &ticket.agent, &ticket.Updated, &ticket.created, &ticket.Synced)
 		if err != nil {
-			log.Println("Wow this is a error ", err)
+			log.Println("ticket read error ", err)
 		}
 		result = append(result, *ticket)
+	}
+	return result
+}
+
+func ReadNotes(ticketid int64) []Note {
+	db := InitDB()
+	sql_readall := "select * from notes where ticketid = " + strconv.FormatInt(ticketid, 10) + ""
+	rows, err := db.Query(sql_readall)
+	if err != nil {
+		log.Println("note read query error ", err)
+	}
+	defer rows.Close()
+
+	var result []Note
+	for rows.Next() {
+		note := &Note{}
+		err = rows.Scan(&note.Id, &note.Key, &note.Name, &note.Desc, &note.Updated, &note.created, &note.Synced)
+		if err != nil {
+			log.Println("note read error ", err)
+		}
+		result = append(result, *note)
 	}
 	return result
 }

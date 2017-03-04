@@ -1,18 +1,6 @@
 //Package adapter wraps common behaviour of sync operations.
 package adapter
 
-//shaper interface
-type Shaper interface {
-	MarkAsLocal()
-	UpdateLocalId(id int64)
-	GetLocalId() int64
-}
-
-//passer interface
-type Passer interface {
-	GetServerId() int64
-}
-
 type BaseModel struct {
 	Id      int64 //local id
 	Key     int64 //local id
@@ -20,7 +8,14 @@ type BaseModel struct {
 	Synced  bool  //synced or not
 }
 
-//Shaper implementations
+//Cooker interface
+type Cooker interface {
+	MarkAsLocal()
+	UpdateLocalId(id int64)
+	GetLocalId() int64
+}
+
+//Cooker implementations
 func (basemodel *BaseModel) MarkAsLocal() {
 	if basemodel.Id == 0 { //storing ticket originally created at client
 		basemodel.Synced = false
@@ -39,6 +34,22 @@ func (basemodel *BaseModel) GetLocalId() int64 {
 	return basemodel.Id
 }
 
+//Passer interface
+type Passer interface {
+	GetServerId() int64
+	GetUpdated() int64
+	GetId() int64
+}
+
+//Passer implementation
 func (basemodel BaseModel) GetServerId() int64 {
 	return basemodel.Key
+}
+
+func (basemodel BaseModel) GetUpdated() int64 {
+	return basemodel.Updated
+}
+
+func (basemodel BaseModel) GetId() int64 {
+	return basemodel.Id
 }

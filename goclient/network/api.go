@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"gitlab.com/vjopensrc/datasync/goclient/model"
 	"log"
+	"strconv"
 )
 
 func TicketAPI(ticket *model.Ticket) {
@@ -61,6 +62,18 @@ func TicketlistAPI() []model.Ticket {
 	<-done
 	tickets, _ := model.ParseTickets(response.Outcome[0])
 	return tickets
+}
+
+func NotelistAPI(ticketid int64) []model.Note {
+	done := make(chan bool)
+	var response Response
+	go func() {
+		response = makeCallToServer(method_get, "tickets/"+strconv.FormatInt(ticketid, 10), nil)
+		done <- true
+	}()
+	<-done
+	notes, _ := model.ParseNotes(response.Outcome[1])
+	return notes
 }
 
 // func createTicketAPI(ticket *model.Ticket) {

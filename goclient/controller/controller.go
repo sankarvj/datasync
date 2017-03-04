@@ -52,29 +52,40 @@ func TicketListHandler() {
 	specificsync := adapter.CreateSpecificSyncer(model.InitDB())
 	//LOCAL
 	dbtickets := model.ReadTickets()
-	log.Println("local tickets ::: ", dbtickets)
 	//API
 	tickets := network.TicketlistAPI()
-	log.Println("server tickets ::: ", tickets)
-	//HOT to COLD conversion
 	for i := 0; i < len(tickets); i++ {
 		ticket := &tickets[i]
-		log.Println("hot ticket ::: ", ticket)
-		specificsync.CookFromRemote(ticket)
-		//Not fully cold still it is little hot. The id has the reference to the serverkey
-		log.Println("cold ticket ::: ", ticket)
-
-		index := specificsync.FindLocalItemIndex(ticket.Id, adapter.PasserSlice(dbtickets))
-		log.Println("index :: ", index)
-		if index != -1 { //already stored
-			if adapter.NeedUpdate(ticket.Updated, dbtickets[index].Updated) {
-				//your update logic
-				log.Println("you need to update this :: ", index)
-			}
-		} else { // new entry
+		//HOT to COLD conversion
+		dbid, dowhat := specificsync.WhatToDo(ticket, adapter.PasserSlice(dbtickets))
+		switch dowhat {
+		case adapter.CREATE:
 			specificsync.MakeLocal(model.StoreTicket, ticket)
+			break
+		case adapter.UPDATE:
+			model.UpdateTicket(ticket, dbid)
+			break
 		}
-
 	}
+}
 
+func NoteListHandler(ticketid int64) {
+	specificsync := adapter.CreateSpecificSyncer(model.InitDB())
+	//LOCAL
+	dbnotes := model.ReadNotes(ticketid)
+	//API
+	notes := network.NotelistAPI(specificsync.HotId("tickets", ticketid))
+	for i := 0; i < len(notes); i++ {
+		note := &notes[i]
+		//HOT to COLD conversion
+		dbid, dowhat := specificsync.WhatToDo(note, adapter.PasserSlice(dbnotes))
+		switch dowhat {
+		case adapter.CREATE:
+			specificsync.MakeLocal(model.StoreNote, note)
+			break
+		case adapter.UPDATE:
+			model.UpdateNote(note, dbid)
+			break
+		}
+	}
 }

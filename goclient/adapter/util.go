@@ -14,10 +14,9 @@ func milliSeconds(now time.Time) int64 {
 	return now.UTC().Unix() * 1000
 }
 
-func inImplementsShaper(in interface{}) bool {
-	//Shaper as a rescuer
-	shaperinterface := reflect.TypeOf((*Shaper)(nil)).Elem()
-	if reflect.TypeOf(in).Implements(shaperinterface) {
+func inImplementsCooker(in interface{}) bool {
+	cookerin := reflect.TypeOf((*Cooker)(nil)).Elem()
+	if reflect.TypeOf(in).Implements(cookerin) {
 		return true
 	} else {
 		return false
@@ -36,7 +35,7 @@ func PasserSlice(slice interface{}) []Passer {
 	return ret
 }
 
-func NeedUpdate(serverupdated int64, localupdated int64) bool {
+func needUpdate(serverupdated int64, localupdated int64) bool {
 	if localupdated == serverupdated {
 		return false
 	} else {

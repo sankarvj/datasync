@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+const (
+	NOTHING = 0
+	CREATE  = 1
+	UPDATE  = 2
+)
+
 type Specificsync struct {
 	DBInst    *sql.DB
 	Tablename string
@@ -23,44 +29,42 @@ func CreateAdvSpecificSyncer(db *sql.DB, tablename string, localid int64) Specif
 }
 
 //Expects a function followed by its params
-//One of the param must implement shaper interface. This is mandatory.
-//Shaper interface is responsible for datasync. Datasync skips if no params implements shaper
+//One of the param must implement cooker interface. This is mandatory.
+//Cooker interface is responsible for datasync. Datasync skips if no params implements cooker
 func (s *Specificsync) MakeLocal(fn interface{}, params ...interface{}) {
-	var shaper Shaper
+	var cooker Cooker
 	f := reflect.ValueOf(fn)
 	if f.Type().NumIn() != len(params) {
 		panic("incorrect number of parameters!")
 	}
 	inputs := make([]reflect.Value, len(params))
 	for k, in := range params {
-		if inImplementsShaper(in) {
-			shaper = in.(Shaper)
+		if inImplementsCooker(in) {
+			cooker = in.(Cooker)
 		}
 		inputs[k] = reflect.ValueOf(in)
 	}
 
-	if shaper != nil {
+	if cooker != nil {
 		//Update synced and update values in the local object
-		shaper.MarkAsLocal()
+		cooker.MarkAsLocal()
 	} else {
-		log.Println("datasync skips since there is no params passed to this func implements shaper!")
+		log.Println("datasync skips since there is no params passed to this func implements cooker!")
 	}
 	//call the corresponding method
 	result := f.Call(inputs)
 	//find the last inserted id
 	s.Localid = result[0].Interface().(int64)
-	if shaper != nil {
+	if cooker != nil {
 		//update the value in the local object
-		shaper.UpdateLocalId(s.Localid)
+		cooker.UpdateLocalId(s.Localid)
 	}
 
 }
 
 //Pass by value
 func (s *Specificsync) CookForRemote(in interface{}) {
-	//var shaper Shaper
-	if inImplementsShaper(in) {
-		//shaper = in.(Shaper)
+	if inImplementsCooker(in) {
 		if s.Tablename == "" { //otherwise user might have set the tablename manually we don't need to set it
 			s.Tablename = strings.ToLower(reflect.TypeOf(in).Elem().Name() + "s")
 		}
@@ -84,12 +88,12 @@ func (s *Specificsync) CookForRemote(in interface{}) {
 			}
 		}
 	} else {
-		log.Println("No implementation of shaper found. Cannot annex remote values")
+		log.Println("No implementation of cooker found. Cannot annex remote values")
 	}
 }
 
 func (s *Specificsync) CookFromRemote(in interface{}) {
-	if inImplementsShaper(in) {
+	if inImplementsCooker(in) {
 		//Form references using tags
 		objtype := reflect.TypeOf(in).Elem()
 		noOfFields := objtype.NumField()
@@ -100,14 +104,13 @@ func (s *Specificsync) CookFromRemote(in interface{}) {
 			reference_table = field.Tag.Get("rt")
 			reference_key = field.Tag.Get("rk") //Not used
 			if reference_table != "" && reference_key != "" {
-				serverid := reflect.ValueOf(in).Int()
-				log.Println("reflect.ValueOf(in) ---- ", serverid)
+				serverid := reflect.ValueOf(in).Elem().Field(i).Int()
 				ref_col_local_val, _ := localkey(s.DBInst, reference_table, serverid)
 				reflect.ValueOf(in).Elem().Field(i).SetInt(ref_col_local_val)
 			}
 		}
 	} else {
-		log.Println("No implementation of shaper found. Cannot convert it to local values")
+		log.Println("No implementation of cooker found. Cannot convert it to local values")
 	}
 }
 
@@ -115,11 +118,34 @@ func (s *Specificsync) CoolItDown(key int64, updated int64) {
 	updateKey(s.DBInst, s.Tablename, key, s.Localid, updated)
 }
 
-func (s *Specificsync) FindLocalItemIndex(serverid int64, dblistitems []Passer) int {
+func (s *Specificsync) HotId(tablename string, id int64) int64 {
+	return serverVal(s.DBInst, tablename, strconv.FormatInt(id, 10))
+}
+
+func (s *Specificsync) WhatToDo(passer Passer, dblistitems []Passer) (dbprimaryid int64, dowhat int64) {
+	//HOT to COLD conversion
+	s.CookFromRemote(passer)
+	//Though passer is cold its id param is still hot.
+	serverid := passer.GetId()
+	updated := passer.GetUpdated()
+
+	index := -1
+	dowhat = NOTHING
+	dbprimaryid = 0
 	for i := 0; i < len(dblistitems); i++ {
 		if (dblistitems[i]).GetServerId() == serverid {
-			return i
+			index = i
 		}
 	}
-	return -1
+
+	if index != -1 { //already stored
+		if needUpdate(updated, dblistitems[index].GetUpdated()) {
+			dowhat = UPDATE
+			dbprimaryid = dblistitems[index].GetId()
+		}
+	} else {
+		dowhat = CREATE
+	}
+
+	return dbprimaryid, dowhat
 }
