@@ -94,8 +94,8 @@ func (s *Specificsync) CookForRemote(in interface{}) {
 		}
 
 		if s.Localid == 0 {
-			cooker := in.(Cooker)
-			s.Localid = cooker.GetLocalId()
+			passer := in.(Passer)
+			s.Localid = passer.GetId()
 		}
 
 		serverid := serverVal(s.DBInst, s.Tablename, strconv.FormatInt(s.Localid, 10))
@@ -105,12 +105,10 @@ func (s *Specificsync) CookForRemote(in interface{}) {
 		objtype := reflect.TypeOf(in).Elem()
 		noOfFields := objtype.NumField()
 		var reference_table string
-		var reference_key string
 		for i := 0; i < noOfFields; i++ {
 			field := objtype.Field(i)
 			reference_table = field.Tag.Get("rt")
-			reference_key = field.Tag.Get("rk") //Not used
-			if reference_table != "" && reference_key != "" {
+			if reference_table != "" {
 				ref_col_local_val := localVal(s.DBInst, s.Tablename, field.Name, strconv.FormatInt(s.Localid, 10))
 				sercolval := serverVal(s.DBInst, reference_table, ref_col_local_val)
 				reflect.ValueOf(in).Elem().Field(i).SetInt(sercolval)
@@ -131,7 +129,7 @@ func (s *Specificsync) CookFromRemote(in interface{}) {
 		for i := 0; i < noOfFields; i++ {
 			field := objtype.Field(i)
 			reference_table = field.Tag.Get("rt")
-			reference_key = field.Tag.Get("rk") //Not used
+			reference_key = field.Tag.Get("rk") //Used here
 			if reference_table != "" && reference_key != "" {
 				serverid := reflect.ValueOf(in).Elem().Field(i).Int()
 				ref_col_local_val, _ := localkey(s.DBInst, reference_table, serverid)

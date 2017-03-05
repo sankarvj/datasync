@@ -50,6 +50,27 @@ func TicketEditHandler(subject string, desc string, ticketid int64) {
 
 }
 
+func TicketListHandler() {
+	specificsync := adapter.CreateSpecificSyncer(model.InitDB())
+	//LOCAL
+	dbtickets := model.ReadTickets()
+	//API
+	tickets := network.TicketlistAPI()
+	for i := 0; i < len(tickets); i++ {
+		ticket := &tickets[i]
+		//HOT to COLD conversion
+		dbid, dowhat := specificsync.WhatToDo(ticket, adapter.PasserSlice(dbtickets))
+		switch dowhat {
+		case adapter.CREATE:
+			specificsync.MakeLocal(model.StoreTicket, ticket)
+			break
+		case adapter.UPDATE:
+			model.UpdateTicket(ticket, dbid)
+			break
+		}
+	}
+}
+
 func NoteCreateHandler(name string, desc string, ticketid int64) {
 	//create a note object
 	note := new(model.Note)
@@ -73,27 +94,6 @@ func NoteCreateHandler(name string, desc string, ticketid int64) {
 		specificsync.CoolItDown(note.Id, note.Updated)
 	}
 
-}
-
-func TicketListHandler() {
-	specificsync := adapter.CreateSpecificSyncer(model.InitDB())
-	//LOCAL
-	dbtickets := model.ReadTickets()
-	//API
-	tickets := network.TicketlistAPI()
-	for i := 0; i < len(tickets); i++ {
-		ticket := &tickets[i]
-		//HOT to COLD conversion
-		dbid, dowhat := specificsync.WhatToDo(ticket, adapter.PasserSlice(dbtickets))
-		switch dowhat {
-		case adapter.CREATE:
-			specificsync.MakeLocal(model.StoreTicket, ticket)
-			break
-		case adapter.UPDATE:
-			model.UpdateTicket(ticket, dbid)
-			break
-		}
-	}
 }
 
 func NoteListHandler(ticketid int64) {

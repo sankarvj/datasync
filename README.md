@@ -1,7 +1,8 @@
 
 #Sync adapter
 
-    Performs datasync between client and server by some simple design and it helps the developer by extracting the monotonous code needed for sync in a single place.
+    Performs datasync between client and server with some minimal design changes in the database. In the flow of data fetching it extracts the invariant code needed for sync logic in to a common place. 
+    
     User has to write their own implementation to store local data and retrive server data. In between that they can call their methods via this adapter to achive the sync.
 
         oldsetup : mobile_client ----> controller ----> api ----> network ----> web_server
@@ -10,7 +11,7 @@
 
     Adapter will run any one of the following sync logics based up on the situation  
 
-    Specific Sync : Run a sync adapter when data changes on the device.
+    Specific Sync : Run a sync adapter right after the dataset changes in the client.
         (This option is straightforward to implement. All api requests will come under this)
     General Sync : Allows automate data transfer based on a variety of criteria, including network changes, elapsed time, or time of day.
         (Whatever fails in the "Specific Sync" would be aggregated and it will be synced in one shot)
@@ -103,8 +104,18 @@
     
 
 
-#Others
+#Basically
 
+    #Create
+    Create a model --> Update the core keys --> Save the model to local db --> Update the Id --> Send to Client --> Heat the model --> Call API --> Update the core keys
+
+    #Edit 
+    Create a model --> Update the core keys --> Save the model to local db --> Send to Client --> Heat the model --> Call API --> Update the core keys
+
+    #Read
+    Parse to a model --> Cool the model --> Check what to do --> Update/Create/Nothing 
+    
+#Retry
     A) Specific Sync - (POST,PUT) (LOCAL --> SERVER)
     B) General Sync - (POST,PUT) (LOCAL --> SERVER)
     C) Remote Sync - (POST,PUT) (SERVER --> LOCAL)
@@ -113,4 +124,7 @@
 
     So basically : Whatever missed in A will be handled by B
                    Whatever missed in C will be handled by D
+
+
+
 

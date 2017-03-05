@@ -3,7 +3,7 @@ package adapter
 
 type BaseModel struct {
 	Id      int64 //local id
-	Key     int64 //local id
+	Key     int64 //server id
 	Updated int64 //last updated time
 	Synced  bool  //synced or not
 }
@@ -13,7 +13,6 @@ type Cooker interface {
 	MarkAsLocal()
 	MarkAsPureLocal()
 	UpdateLocalId(id int64)
-	GetLocalId() int64
 }
 
 //Cooker implementations
@@ -33,10 +32,6 @@ func (basemodel *BaseModel) MarkAsPureLocal() {
 
 func (basemodel *BaseModel) UpdateLocalId(id int64) {
 	basemodel.Id = id
-}
-
-func (basemodel *BaseModel) GetLocalId() int64 {
-	return basemodel.Id
 }
 
 //Passer interface
