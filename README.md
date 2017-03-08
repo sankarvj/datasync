@@ -6,7 +6,6 @@
     User has to write their own implementation to store local data and retrive server data. In between that they can call their methods via this adapter to achive the sync.
 
         oldsetup : mobile_client ----> controller ----> api ----> network ----> web_server
-
         newsetup : mobile_client ----> controller ----> adapter ----> api ----> network ----> web_server
 
     Adapter will run any one of the following sync logics based up on the situation  
@@ -16,7 +15,7 @@
     General Sync : Allows automate data transfer based on a variety of criteria, including network changes, elapsed time, or time of day.
         (Whatever fails in the "Specific Sync" would be aggregated and it will be synced in one shot)
     Remote Sync : Run the sync adapter in response to a message from a server, indicating that server-based data has changed.
-        (Sync via push notification)
+        (Sync via push notification, Synchronize and store data before it is needed)
     Erase Sync : Sync deleted rows from the local to remote and vice versa 
         (It uses some peculiar logics from the rest of the above) - It has some edge cases :(
     
@@ -29,28 +28,24 @@
     3) Android sync adapter is only in charge of running your code, it has no idea how your data should be synced with the server. But this sync adapter is somewhat intelligent since it knows some basic context of your model and by using that it should take care of sync operations of its own.
 
     4) If someone break rules, handle it gracefully and intimate the developer with meaningful log messages.
-    
-                
-#Problems
-
-    1) Forign key reference in the server table should be modified with its corresponding local_id. Upon the api request, the local instance should bring back the remote_id to form the api params.
-        
-    2) Sync attachements have problems such as deleting the local copy,rename and client validation has to be done. 
-
-    3) Deciding the priority of action (Local/Server) during "General Sync". Right now it will give the priority to local
-
-    4) Too many rules, reduce it
-
 
 #5Rules to follow
 
-    1) Server table should contain id & updated column
+    1) Server table should contain id & updated column - updated column must use UTC
 
     2) Client tablename be the plural of its model name & colname should be as same as model field name (Could remove this check if a utility added to create tables from the model)
 
     3) Client model must embed "basemodel" struct (see detail in #HowToImplementSection1)
 
     4) Client model must add tags to the column if that column has any reference (see detail in #HowToImplementSection4)
+
+#Problems
+        
+    1) Deciding the priority of action (Local/Server) during "General Sync". Right now it will give the priority to local
+
+    2) Too many rules, reduce it.
+
+    3) Data conflits. What if a agent added a note in offline but when it tries to sync that ticket is resolved already.
 
                     
 #How to implement the sync adapter with the existing system ?
