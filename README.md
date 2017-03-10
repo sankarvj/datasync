@@ -110,7 +110,7 @@
     #Read
     Parse to a model --> Cool the model --> Check what to do --> Update/Create/Nothing 
     
-#Retry
+#Retry Logic
     A) Specific Sync - (POST,PUT) (LOCAL --> SERVER)
     B) General Sync - (POST,PUT) (LOCAL --> SERVER)
     C) Remote Sync - (POST,PUT) (SERVER --> LOCAL)
@@ -121,5 +121,16 @@
                    Whatever missed in C will be handled by D
 
 
+#EdgeCases 
+
+    1) If we have to hit different APIs for different column update in the same row : (In the tickets table if subject change requires to hit an API and desc change requires different API)
+
+        Solution 1) Server should handle this since server has the reference of the old row it can easily check which column is updated.
+
+        Solution 2) In those scenerios we need to create a new model which must embed just the specialbasemodel (Id,RefVal,Synced,Updated) and a tag needs to be added in the main table column 'rp:specialtickets'
+
+    2) If an API updates two model in the server. 
+
+    3) What if it really updates the server end and fails to update the changes in the localdb ?
 
 

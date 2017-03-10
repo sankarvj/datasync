@@ -203,27 +203,28 @@ func StoreTicket(ticket *Ticket) int64 {
 	}
 }
 
-func UpdateTicket(ticket *Ticket, localid int64) {
+func UpdateTicket(ticket *Ticket) {
 	db := InitDB()
 	log.Println("########## update ticket ###########")
 	stmt, err := db.Prepare(sql_ticket_update)
 	if err != nil {
 		log.Println("error updating ticket : ", err)
 	}
-	_, err = stmt.Exec(ticket.Subject, ticket.Desc, ticket.requester, ticket.agent, ticket.Updated, ticket.created, ticket.Synced, localid)
+	_, err = stmt.Exec(ticket.Subject, ticket.Desc, ticket.requester, ticket.agent, ticket.Updated, ticket.created, ticket.Synced, ticket.Id)
 	if err != nil {
 		log.Println("error updating ticket exec: ", err)
 	}
 }
 
-func UpdateNote(note *Note, localid int64) {
+func UpdateNote(note *Note) {
 	db := InitDB()
 	log.Println("########## update note ###########")
 	stmt, err := db.Prepare(sql_note_update)
+	defer stmt.Close()
 	if err != nil {
 		log.Println("error updating note : ", err)
 	}
-	_, err = stmt.Exec(note.Name, note.Desc, note.Updated, note.created, note.Synced, localid)
+	_, err = stmt.Exec(note.Name, note.Desc, note.Updated, note.created, note.Synced, note.Id)
 	if err != nil {
 		log.Println("error updating note exec: ", err)
 	}
@@ -255,6 +256,27 @@ func StoreNote(note *Note) int64 {
 func ReadTickets() []Ticket {
 	db := InitDB()
 	sql_readall := "select * from tickets"
+	rows, err := db.Query(sql_readall)
+	if err != nil {
+		log.Println("ticket read query error ", err)
+	}
+	defer rows.Close()
+
+	var result []Ticket
+	for rows.Next() {
+		ticket := &Ticket{}
+		err = rows.Scan(&ticket.Id, &ticket.Key, &ticket.Subject, &ticket.Desc, &ticket.requester, &ticket.agent, &ticket.Updated, &ticket.created, &ticket.Synced)
+		if err != nil {
+			log.Println("ticket read error ", err)
+		}
+		result = append(result, *ticket)
+	}
+	return result
+}
+
+func ReadFrozenTickets() []Ticket {
+	db := InitDB()
+	sql_readall := "select * from tickets where synced = 0"
 	rows, err := db.Query(sql_readall)
 	if err != nil {
 		log.Println("ticket read query error ", err)

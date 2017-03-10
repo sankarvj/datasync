@@ -1,4 +1,4 @@
-package adapter
+package performer
 
 import (
 	"database/sql"
@@ -69,6 +69,7 @@ func updateKey(db *sql.DB, tablename string, key int64, id int64, updated int64)
 	alreadyaddedid, localpresent := localkey(db, tablename, key)
 	if localpresent { // Key Already Set
 		stmt, err := db.Prepare("update " + tablename + " set synced= 'true',updated = " + strconv.FormatInt(updated, 10) + " where id=?")
+		defer stmt.Close()
 		if err != nil {
 			log.Println("Error Prepare updating key ", err)
 		}
@@ -79,6 +80,7 @@ func updateKey(db *sql.DB, tablename string, key int64, id int64, updated int64)
 		}
 	} else {
 		stmt, err := db.Prepare("update " + tablename + " set key=?,synced= 'true',updated = " + strconv.FormatInt(updated, 10) + " where id=?")
+		defer stmt.Close()
 		if err != nil {
 			log.Println("Error prepare updating key ", err)
 		}
@@ -121,12 +123,13 @@ func localkey(db *sql.DB, tablename string, serverid int64) (int64, bool) {
 	return id, localpresent
 }
 
-func scanFrozenData(db *sql.DB, tablename string) bool {
+func ScanFrozenData(db *sql.DB, tablename string) bool {
 	sql_readall := `
 	SELECT Id FROM ` + tablename + `
-	WHERE Synced = 'false'
+	WHERE Synced = 0
 	`
 	rows, err := db.Query(sql_readall)
+	defer closeRows(rows)
 	if err != nil {
 		log.Println("Error reading scanFrozenData ", err)
 		return false

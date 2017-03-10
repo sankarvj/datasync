@@ -1,4 +1,4 @@
-package adapter
+package technique
 
 import (
 	"database/sql"
@@ -20,6 +20,6 @@ func DeleteTable(tablename string) {
 }
 
 //When the data stored in frozen state for a very long even after many attempt to sync that data
-func EliminateStaleData(tablename string) {
+func EliminateRottonData(tablename string) {
 
 }

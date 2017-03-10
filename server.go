@@ -11,22 +11,22 @@ func main() {
 	callback := CallBack{}
 
 	//fmt.Println("__________________________Ticket Create____________________________")
-	goclient.TicketCreateHandler(callback, "subject 1", "description 1")
+	goclient.TicketCreateHandler(callback, "offfy subject 1", "description 1")
 
 	//fmt.Println("__________________________Note Create____________________________")
-	//goclient.NoteCreateHandler("note name", "note description", 245)
+	//goclient.NoteCreateHandler("lnote name", "note description", 283)
 
 	//fmt.Println("__________________________Ticket List____________________________")
 	//goclient.TicketListHandler(callback)
 
 	//fmt.Println("__________________________Note List____________________________")
-	//goclient.NoteListHandler(callback, 234)
+	//goclient.NoteListHandler(callback, 283)
 
 	//fmt.Println("__________________________Ticket Edit____________________________")
-	//goclient.TicketEditHandler("vijay", "sankar", 233)
+	//goclient.TicketEditHandler("layss", "sankar", 283)
 
-	fmt.Println("____________________________Generic Sync____________________________")
-	//goclient.GenericSync()
+	//fmt.Println("____________________________Generic Sync____________________________")
+	//goclient.PeriodicSync()
 
 }
 

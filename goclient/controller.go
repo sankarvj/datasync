@@ -2,7 +2,8 @@ package goclient
 
 import (
 	"encoding/json"
-	"gitlab.com/vjopensrc/datasync/adapter"
+	"gitlab.com/vjopensrc/datasync/syncadapter/performer"
+	"gitlab.com/vjopensrc/datasync/syncadapter/technique"
 	"log"
 )
 
@@ -12,18 +13,16 @@ func TicketCreateHandler(callback ClientCallback, subject string, desc string) {
 	ticket.Subject = subject
 	ticket.Desc = desc
 
-	specificsync := adapter.CreateSpecificSyncer(InitDB())
+	pro := performer.CreatePro(InitDB())
 	//store it local
-	specificsync.MakeLocal(StoreTicket, ticket)
+	pro.Prepare(StoreTicket, ticket)
 	out, _ := json.Marshal(ticket)
 	callback.OnResponseReceived(string(out))
 	//server annex
 	//localticket := *ticket //save local instance before passing it to cook for server
-	specificsync.CookForRemote(ticket)
+	pro.CookForRemote(ticket)
 	//call api while the object it hot
-	if success := ticketAPI(ticket); success {
-		//cool it down
-		specificsync.CoolItDown(ticket.Id, ticket.Updated)
+	if success := pro.CallRemote(ticket); success {
 		callback.OnResponseUpdated()
 	}
 }
@@ -35,25 +34,23 @@ func TicketEditHandler(subject string, desc string, ticketid int64) {
 	ticket.Subject = subject
 	ticket.Desc = desc
 
-	specificsync := adapter.CreateSpecificSyncer(InitDB())
+	pro := performer.CreatePro(InitDB())
 	//store it local
-	specificsync.UpdateLocal(UpdateTicket, ticket, ticketid)
+	pro.Prepare(UpdateTicket, ticket)
 	//server annex
 	//localticket := *ticket //save local instance before passing it to cook for server
 	log.Println("local id ", ticket.Id)
-	specificsync.CookForRemote(ticket)
+	pro.CookForRemote(ticket)
 	log.Println("server id ", ticket.Id)
 
-	//call api while the object is hot
-	if success := ticketEditAPI(ticket); success {
-		//cool it down
-		specificsync.CoolItDown(ticket.Id, ticket.Updated)
+	if success := pro.CallRemote(ticket); success {
+
 	}
 
 }
 
 func TicketListHandler(callback ClientCallback) {
-	specificsync := adapter.CreateSpecificSyncer(InitDB())
+	pro := performer.CreatePro(InitDB())
 	//LOCAL
 	dbtickets := ReadTickets()
 	out, _ := json.Marshal(dbtickets)
@@ -64,15 +61,15 @@ func TicketListHandler(callback ClientCallback) {
 	for i := 0; i < len(tickets); i++ {
 		ticket := &tickets[i]
 		//HOT to COLD conversion
-		dbid, dowhat := specificsync.WhatToDo(ticket, adapter.PasserSlice(dbtickets))
+		dowhat := pro.WhatToDo(ticket, performer.PasserSlice(dbtickets))
 		switch dowhat {
-		case adapter.CREATE:
+		case performer.CREATE:
 			databasechanged = true
-			specificsync.MakeLocal(StoreTicket, ticket)
+			pro.Prepare(StoreTicket, ticket)
 			break
-		case adapter.UPDATE:
+		case performer.UPDATE:
 			databasechanged = true
-			UpdateTicket(ticket, dbid)
+			UpdateTicket(ticket)
 			break
 		}
 	}
@@ -89,45 +86,43 @@ func NoteCreateHandler(name string, desc string, ticketid int64) {
 	note.Name = name
 	note.Desc = desc
 
-	specificsync := adapter.CreateSpecificSyncer(InitDB())
+	pro := performer.CreatePro(InitDB())
 	//store it local
-	specificsync.MakeLocal(StoreNote, note)
+	pro.Prepare(StoreNote, note)
 	//server call
 	//localnote := *note //save local instance before passing it to cook for server
 	log.Println("local id ", note.Id)
 	log.Println("local ticketid ", note.Ticketid)
-	specificsync.CookForRemote(note)
+	pro.CookForRemote(note)
 	log.Println("server id ", note.Id)
 	log.Println("server ticketid ", note.Ticketid)
 	//call api while it is hot
-	if success := NoteAPI(note); success {
-		//update local with key,sync and updatedtime
-		specificsync.CoolItDown(note.Id, note.Updated)
-	}
+	if success := pro.CallRemote(note); success {
 
+	}
 }
 
 func NoteListHandler(callback ClientCallback, ticketid int64) {
-	specificsync := adapter.CreateSpecificSyncer(InitDB())
+	pro := performer.CreatePro(InitDB())
 	//LOCAL
 	dbnotes := ReadNotes(ticketid)
 	out, _ := json.Marshal(dbnotes)
 	callback.OnResponseReceived(string(out))
 	//API
 	databasechanged := false
-	notes := NotelistAPI(specificsync.HotId("tickets", ticketid))
+	notes := NotelistAPI(pro.HotId("tickets", ticketid))
 	for i := 0; i < len(notes); i++ {
 		note := &notes[i]
 		//HOT to COLD conversion
-		dbid, dowhat := specificsync.WhatToDo(note, adapter.PasserSlice(dbnotes))
+		dowhat := pro.WhatToDo(note, performer.PasserSlice(dbnotes))
 		switch dowhat {
-		case adapter.CREATE:
+		case performer.CREATE:
 			databasechanged = true
-			specificsync.MakeLocal(StoreNote, note)
+			pro.Prepare(StoreNote, note)
 			break
-		case adapter.UPDATE:
+		case performer.UPDATE:
 			databasechanged = true
-			UpdateNote(note, dbid)
+			UpdateNote(note)
 			break
 		}
 	}
@@ -137,8 +132,9 @@ func NoteListHandler(callback ClientCallback, ticketid int64) {
 	}
 }
 
-func GenericSync() {
-	genericsync := adapter.CreateGenericSyncer(InitDB())
-	genericsync.Tablenames = append(genericsync.Tablenames, "tickets")
-	genericsync.SyncFrozenData()
+func PeriodicSync() {
+	periodicsync := technique.CreatePeriodic(InitDB())
+	periodicsync.Models = append(periodicsync.Models, &Ticket{})
+	periodicsync.Models = append(periodicsync.Models, &Note{})
+	periodicsync.CheckPeriodic()
 }

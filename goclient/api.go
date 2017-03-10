@@ -20,15 +20,18 @@ func ticketAPI(ticket *Ticket) bool {
 	}()
 	<-done
 
-	*ticket, err = ParseTicket(response.Outcome[0])
-
-	if err != nil {
-		log.Println("Error parsing ticket")
+	if len(response.Outcome) > 0 {
+		*ticket, err = ParseTicket(response.Outcome[0])
+		if err != nil {
+			log.Println("Error parsing ticket")
+			return false
+		}
+		log.Println("ticket ", ticket)
+		return true
+	} else {
 		return false
 	}
 
-	log.Println("ticket ", ticket)
-	return true
 }
 
 func ticketEditAPI(ticket *Ticket) bool {
@@ -45,15 +48,19 @@ func ticketEditAPI(ticket *Ticket) bool {
 	}()
 	<-done
 
-	*ticket, err = ParseTicket(response.Outcome[0])
+	if len(response.Outcome) > 0 {
+		*ticket, err = ParseTicket(response.Outcome[0])
+		if err != nil {
+			log.Println("Error parsing ticket")
+			return false
+		}
 
-	if err != nil {
-		log.Println("Error parsing ticket")
+		log.Println("ticket ", ticket)
+		return true
+	} else {
 		return false
 	}
 
-	log.Println("ticket ", ticket)
-	return true
 }
 
 func NoteAPI(note *Note) bool {
@@ -70,13 +77,17 @@ func NoteAPI(note *Note) bool {
 	}()
 	<-done
 
-	*note, err = ParseNote(response.Outcome[0])
-
-	if err != nil {
-		log.Println("Error parsing note")
+	if len(response.Outcome) > 0 {
+		*note, err = ParseNote(response.Outcome[0])
+		if err != nil {
+			log.Println("Error parsing note")
+			return false
+		}
+		return true
+	} else {
 		return false
 	}
-	return true
+
 }
 
 func TicketlistAPI() []Ticket {
@@ -105,6 +116,12 @@ func NotelistAPI(ticketid int64) []Note {
 		done <- true
 	}()
 	<-done
-	notes, _ := ParseNotes(response.Outcome[1])
-	return notes
+	if len(response.Outcome) > 1 {
+		notes, _ := ParseNotes(response.Outcome[1])
+		return notes
+	} else {
+		notes := make([]Note, 0)
+		return notes
+	}
+
 }
