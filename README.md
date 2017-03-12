@@ -8,15 +8,15 @@
         oldsetup : mobile_client ----> controller ----> api ----> network ----> web_server
         newsetup : mobile_client ----> controller ----> adapter ----> api ----> network ----> web_server
 
-    Adapter will run any one of the following sync logics based up on the situation  
+    Adapter will run any one of the following sync techniques based up on the situation  
 
-    Specific Sync : Run a sync adapter right after the dataset changes in the client.
+    Basic  : Run a sync adapter right after the dataset changes in the client.
         (This option is straightforward to implement. All api requests will come under this)
-    General Sync : Allows automate data transfer based on a variety of criteria, including network changes, elapsed time, or time of day.
+    Periodic  : Allows automate data transfer based on a variety of criteria, including network changes, elapsed time, or time of day.
         (Whatever fails in the "Specific Sync" would be aggregated and it will be synced in one shot)
-    Remote Sync : Run the sync adapter in response to a message from a server, indicating that server-based data has changed.
+    Impulse  : Run the sync adapter in response to a message from a server, indicating that server-based data has changed.
         (Sync via push notification, Synchronize and store data before it is needed)
-    Erase Sync : Sync deleted rows from the local to remote and vice versa 
+    Eject  : Sync deleted rows from the local to remote and vice versa 
         (It uses some peculiar logics from the rest of the above) - It has some edge cases :(
     
 #Goals:
@@ -41,7 +41,7 @@
 
 #Problems
         
-    1) Deciding the priority of action (Local/Server) during "General Sync". Right now it will give the priority to local
+    1) Deciding the priority of action (Local/Server) during "Periodic Sync". Right now it will give the priority to local
 
     2) Too many rules, reduce it.
 
@@ -57,7 +57,6 @@
                             	Key     int64    //server id
                             	Updated int64    //last updated time
                             	Synced  bool     //synced or not
-                            	Baseids []Baseid //forignkey ids
                             }
                             
                             type Ticket struct {
@@ -66,22 +65,22 @@
                             	requester string
                             	agent     string
                             	created   time.Time
-                            	adapter.BaseModel //Embed BaseModel
+                            	core.BaseModel //Embed BaseModel
                             }
                             
     2) So that all the methods declared under BaseModel is promoted to be accessed via other models inherit it
  
-                            ticket.MarkAsLocal()
-                            ticket.UpdateLocalId(id int64)
+                            ticket.PrepareLocal()
+                            ticket.SetLocalId(id int64)
                             etc...
                             
     3) Invidual models can override promoted methods in case if any modification needed
                             
-                            func (obj *BaseModel) UpdateLocalId(id int64) {
+                            func (obj *BaseModel) SetLocalId(id int64) {
                             	obj.Id = id
                             }
                             
-                            func (obj *Ticket) UpdateLocalId(id int64) {
+                            func (obj *Ticket) SetLocalId(id int64) {
                             	obj.Id = id * 10
                             }
 
@@ -92,7 +91,7 @@
                                 Name     string
                                 Desc     string
                                 created  time.Time
-                                adapter.BaseModel
+                                core.BaseModel
                             }
                             
         Note : ticketid column of notes table references id column of Ticket table. 
@@ -132,5 +131,17 @@
     2) If an API updates two model in the server. 
 
     3) What if it really updates the server end and fails to update the changes in the localdb ?
+
+    4) What if user changes his time in the local device ?
+
+        Solution 1) Server will update the local time on each response.
+
+
+#Useful Links
+
+https://docs.microsoft.com/en-us/azure/app-service-mobile/app-service-mobile-offline-data-sync
+https://docs.google.com/document/d/1GeMxb9cgLpHkXJOmDvy90A3BQn-p774IRR40ng65Ki8/pub
+https://github.com/JohnGoodstadt/mobileSyncIOS
+https://culturedcode.com/things/blog/2010/12/state-of-sync-part-1/
 
 

@@ -1,5 +1,18 @@
 package technique
 
+//#Core goals
+//* pull changes in the background without affecting the user experiance
+
+//#Needs server side implementation
+//* no
+
+//#Logic
+//* init time_specific or network_specific
+
+//#TODO
+//* find a way to sense network reconnectivity
+//* give 2 minutes buffer in the event of network reconnectivity. This will help reduce server load.
+
 import (
 	"database/sql"
 	"gitlab.com/vjopensrc/datasync/syncadapter/core"
