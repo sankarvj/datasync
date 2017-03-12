@@ -79,6 +79,8 @@ func (s *Pro) Prepare(fn interface{}, params ...interface{}) {
 }
 
 func (s *Pro) Push(cooker core.Cooker) bool {
+	s.CookForRemote(cooker)
+
 	var remoteUpdated bool
 	if cooker.ServerKey() != 0 { //update
 		remoteUpdated = cooker.Signal(TECHNIQUE_BASIC_UPDATE)

@@ -11,7 +11,7 @@ func main() {
 	callback := CallBack{}
 
 	//fmt.Println("__________________________Ticket Create____________________________")
-	//gomob.TicketCreateHandler(callback, "offfy subject 1", "description 1")
+	gomob.TicketCreateHandler(callback, "offfy subject 1", "description 1")
 
 	//fmt.Println("__________________________Note Create____________________________")
 	//gomob.NoteCreateHandler(callback, "lnote name", "note description", 296)
@@ -20,7 +20,7 @@ func main() {
 	//gomob.TicketListHandler(callback)
 
 	//fmt.Println("__________________________Note List____________________________")
-	gomob.NoteListHandler(callback, 297)
+	//gomob.NoteListHandler(callback, 297)
 
 	//fmt.Println("__________________________Ticket Edit____________________________")
 	//gomob.TicketEditHandler(callback, "layss", "sankar", 296)

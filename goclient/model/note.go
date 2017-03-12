@@ -21,14 +21,7 @@ func (note *Note) Create(callback ParallelClientCallback) {
 	pro := performer.CreatePro(InitDB())
 	//store it local
 	pro.Prepare(StoreNote, note)
-	//server call
 	//localnote := *note //save local instance before passing it to cook for server
-	log.Println("local id ", note.Id)
-	log.Println("local ticketid ", note.Ticketid)
-	pro.CookForRemote(note)
-	log.Println("server id ", note.Id)
-	log.Println("server ticketid ", note.Ticketid)
-	//call api while it is hot
 	if success := pro.Push(note); success {
 		callback.OnResponseUpdated()
 	}

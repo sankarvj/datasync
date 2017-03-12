@@ -24,10 +24,7 @@ func (ticket *Ticket) Create(callback ParallelClientCallback) {
 	pro.Prepare(StoreTicket, ticket)
 	out, _ := json.Marshal(ticket)
 	callback.OnResponseReceived(string(out))
-	//server annex
 	//localticket := *ticket //save local instance before passing it to cook for server
-	pro.CookForRemote(ticket)
-	//call api while the object it hot
 	if success := pro.Push(ticket); success {
 		callback.OnResponseUpdated()
 	}
@@ -39,12 +36,7 @@ func (ticket *Ticket) Update(callback ParallelClientCallback) {
 	pro.Prepare(UpdateTicket, ticket)
 	out, _ := json.Marshal(ticket)
 	callback.OnResponseReceived(string(out))
-	//server annex
 	//localticket := *ticket //save local instance before passing it to cook for server
-	log.Println("local id ", ticket.Id)
-	pro.CookForRemote(ticket)
-	log.Println("server id ", ticket.Id)
-
 	if success := pro.Push(ticket); success {
 		callback.OnResponseUpdated()
 	}
@@ -140,7 +132,6 @@ func syncFrozenData() {
 	for i := 0; i < len(dbtickets); i++ {
 		pro := performer.CreatePro(InitDB())
 		ticket := &dbtickets[i]
-		pro.CookForRemote(ticket)
 		pro.Push(ticket)
 	}
 }
