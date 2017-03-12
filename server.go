@@ -2,35 +2,34 @@ package main
 
 import (
 	"fmt"
-	"gitlab.com/vjopensrc/datasync/goclient"
+	"gitlab.com/vjopensrc/datasync/goclient/gomob"
 )
 
 func main() {
 	frontendAdapter := FrontendAdapter{}
-	goclient.RegisterFrontendAdapter(frontendAdapter)
+	gomob.RegisterFrontendAdapter(frontendAdapter)
 	callback := CallBack{}
 
 	//fmt.Println("__________________________Ticket Create____________________________")
-	goclient.TicketCreateHandler(callback, "offfy subject 1", "description 1")
+	//gomob.TicketCreateHandler(callback, "offfy subject 1", "description 1")
 
 	//fmt.Println("__________________________Note Create____________________________")
-	//goclient.NoteCreateHandler("lnote name", "note description", 283)
+	//gomob.NoteCreateHandler(callback, "lnote name", "note description", 296)
 
 	//fmt.Println("__________________________Ticket List____________________________")
-	//goclient.TicketListHandler(callback)
+	//gomob.TicketListHandler(callback)
 
 	//fmt.Println("__________________________Note List____________________________")
-	//goclient.NoteListHandler(callback, 283)
+	gomob.NoteListHandler(callback, 297)
 
 	//fmt.Println("__________________________Ticket Edit____________________________")
-	//goclient.TicketEditHandler("layss", "sankar", 283)
+	//gomob.TicketEditHandler(callback, "layss", "sankar", 296)
 
-	//fmt.Println("____________________________Generic Sync____________________________")
-	//goclient.PeriodicSync()
+	//fmt.Println("____________________________Periodic Sync____________________________")
+	//gomob.PeriodicSync()
 
 }
 
-//Adapter talks with frontend and get back info needed for goclient
 type FrontendAdapter struct {
 }
 

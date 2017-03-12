@@ -3,7 +3,6 @@ package performer
 import (
 	"database/sql"
 	"gitlab.com/vjopensrc/datasync/syncadapter/core"
-	"log"
 	"reflect"
 	"strconv"
 )
@@ -45,9 +44,7 @@ func (s *Pro) Prepare(fn interface{}, params ...interface{}) {
 	}
 	inputs := make([]reflect.Value, len(params))
 	for k, in := range params {
-		log.Println("god...", reflect.TypeOf(in))
 		if inImplementsCooker(in) {
-
 			cooker = in.(core.Cooker)
 		}
 		inputs[k] = reflect.ValueOf(in)
@@ -81,7 +78,7 @@ func (s *Pro) Prepare(fn interface{}, params ...interface{}) {
 
 }
 
-func (s *Pro) CallRemote(cooker core.Cooker) bool {
+func (s *Pro) Push(cooker core.Cooker) bool {
 	var remoteUpdated bool
 	if cooker.ServerKey() != 0 { //update
 		remoteUpdated = cooker.Signal(TECHNIQUE_BASIC_UPDATE)

@@ -73,7 +73,6 @@ func (s *Pro) BuildUp(fn interface{}, params ...interface{}) (reflect.Value, []r
 	}
 	inputs := make([]reflect.Value, len(params))
 	for k, in := range params {
-		log.Println("god...", reflect.TypeOf(in))
 		if inImplementsCooker(in) {
 
 			cooker = in.(core.Cooker)
