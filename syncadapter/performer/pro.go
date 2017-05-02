@@ -3,6 +3,7 @@ package performer
 import (
 	"database/sql"
 	"gitlab.com/vjopensrc/datasync/syncadapter/core"
+	"log"
 	"reflect"
 	"strconv"
 )
@@ -33,6 +34,7 @@ func CreateProAdv(db *sql.DB, tablename string, localid int64) Pro {
 	return Pro{db, tablename, localid}
 }
 
+//Update/Create in local can use this function
 //Expects a function followed by its params
 //One of the param must implement cooker interface. This is mandatory.
 //Cooker interface is responsible for datasync. Datasync skips if no params implements cooker
@@ -102,6 +104,26 @@ func (s *Pro) coolItDown(key int64, updated int64) {
 
 func (s *Pro) HotId(tablename string, id int64) int64 {
 	return serverVal(s.DBInst, tablename, strconv.FormatInt(id, 10))
+}
+
+func (s *Pro) WhatToDo1(slice interface{}, locallistitems []core.Passer) {
+	serverlistitems := reflect.ValueOf(slice)
+	if serverlistitems.Kind() != reflect.Slice {
+		panic("InterfaceSlice() given a non-slice type")
+	}
+
+	var localitem core.Passer
+	for i := 0; i < serverlistitems.Len(); i++ {
+		serveritem := serverlistitems.Index(i).Addr().Interface().(core.Passer)
+		s.CookFromRemote(serveritem)
+
+		for j := 0; j < len(locallistitems); j++ {
+			localitem = locallistitems[j]
+			if (serveritem).ServerKey() == localitem.ServerKey() {
+				log.Println("Hello.....")
+			}
+		}
+	}
 }
 
 func (s *Pro) WhatToDo(cooker core.Cooker, dblistitems []core.Passer) (dowhat int64) {

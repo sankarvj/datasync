@@ -11,13 +11,13 @@ func main() {
 	callback := CallBack{}
 
 	//fmt.Println("__________________________Ticket Create____________________________")
-	gomob.TicketCreateHandler(callback, "offfy subject 1", "description 1")
+	//gomob.TicketCreateHandler(callback, "offfy subject 1", "description 1")
 
 	//fmt.Println("__________________________Note Create____________________________")
 	//gomob.NoteCreateHandler(callback, "lnote name", "note description", 296)
 
 	//fmt.Println("__________________________Ticket List____________________________")
-	//gomob.TicketListHandler(callback)
+	gomob.TicketListHandler(callback)
 
 	//fmt.Println("__________________________Note List____________________________")
 	//gomob.NoteListHandler(callback, 297)
@@ -35,6 +35,10 @@ type FrontendAdapter struct {
 
 func (f FrontendAdapter) DatabasePath() string {
 	return "datasync.db"
+}
+
+func (f FrontendAdapter) Domain() string {
+	return "192.168.61.15:8080"
 }
 
 type CallBack struct {

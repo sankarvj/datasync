@@ -8,8 +8,8 @@ import (
 	"net/http"
 )
 
-const (
-	DOMAIN_NAME = "192.168.0.105:8080"
+var (
+	DOMAIN_NAME = "192.168.61.15:8080"
 )
 
 const (
@@ -20,6 +20,10 @@ const (
 
 	APPLICATION_JSON string = "application/json"
 )
+
+func SetDomain(domain string) {
+	DOMAIN_NAME = domain
+}
 
 type NetworkClient struct {
 	Url       string

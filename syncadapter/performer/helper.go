@@ -16,6 +16,15 @@ func inImplementsCooker(in interface{}) bool {
 	}
 }
 
+func inImplementsPasser(in interface{}) bool {
+	passerin := reflect.TypeOf((*core.Passer)(nil)).Elem()
+	if reflect.TypeOf(in).Implements(passerin) {
+		return true
+	} else {
+		return false
+	}
+}
+
 func PasserSlice(slice interface{}) []core.Passer {
 	s := reflect.ValueOf(slice)
 	if s.Kind() != reflect.Slice {
@@ -24,6 +33,18 @@ func PasserSlice(slice interface{}) []core.Passer {
 	ret := make([]core.Passer, s.Len())
 	for i := 0; i < s.Len(); i++ {
 		ret[i] = s.Index(i).Interface().(core.Passer)
+	}
+	return ret
+}
+
+func CookerSlice(slice interface{}) []interface{} {
+	s := reflect.ValueOf(slice)
+	if s.Kind() != reflect.Slice {
+		panic("InterfaceSlice() given a non-slice type")
+	}
+	ret := make([]interface{}, s.Len())
+	for i := 0; i < s.Len(); i++ {
+		ret[i] = s.Index(i).Interface()
 	}
 	return ret
 }

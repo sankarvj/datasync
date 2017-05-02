@@ -53,22 +53,24 @@ func TicketList(callback ParallelClientCallback) {
 	outcome := api.TicketlistAPI()
 	tickets, _ := ParseTickets(outcome)
 
+	pro.WhatToDo1(tickets, performer.PasserSlice(dbtickets))
+
 	//TODO MOVE THIS INSIDE ADAPTER
-	for i := 0; i < len(tickets); i++ {
-		ticket := &tickets[i]
-		//HOT to COLD conversion
-		dowhat := pro.WhatToDo(ticket, performer.PasserSlice(dbtickets))
-		switch dowhat {
-		case performer.CREATE:
-			databasechanged = true
-			pro.Prepare(StoreTicket, ticket)
-			break
-		case performer.UPDATE:
-			databasechanged = true
-			UpdateTicket(ticket)
-			break
-		}
-	}
+	// for i := 0; i < len(tickets); i++ {
+	// 	ticket := &tickets[i]
+	// 	//HOT to COLD conversion
+	// 	dowhat := pro.WhatToDo(ticket, performer.PasserSlice(dbtickets))
+	// 	switch dowhat {
+	// 	case performer.CREATE:
+	// 		databasechanged = true
+	// 		pro.Prepare(StoreTicket, ticket)
+	// 		break
+	// 	case performer.UPDATE:
+	// 		databasechanged = true
+	// 		UpdateTicket(ticket)
+	// 		break
+	// 	}
+	// }
 
 	if databasechanged {
 		callback.OnResponseUpdated()

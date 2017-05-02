@@ -18,6 +18,7 @@
         (Sync via push notification, Synchronize and store data before it is needed)
     Eject  : Sync deleted rows from the local to remote and vice versa 
         (It uses some peculiar logics from the rest of the above) - It has some edge cases :(
+    Arrest : Reduce periodic sync occurances
     
 #Goals:
     
@@ -87,7 +88,7 @@
     4) If a column in a table references a id from the other table than that column must be tagged like the below structure 
     
                             type Note struct {
-                                Ticketid int64 `rt:"trips" rk:"id"`
+                                Ticketid int64 `rt:"tickets" rk:"id"`
                                 Name     string
                                 Desc     string
                                 created  time.Time
@@ -110,10 +111,10 @@
     Parse to a model --> Cool the model --> Check what to do --> Update/Create/Nothing 
     
 #Retry Logic
-    A) Specific Sync - (POST,PUT) (LOCAL --> SERVER)
-    B) General Sync - (POST,PUT) (LOCAL --> SERVER)
+    A) Basic Sync - (POST,PUT) (LOCAL --> SERVER)
+    B) Periodic Sync - (POST,PUT) (LOCAL --> SERVER)
     C) Remote Sync - (POST,PUT) (SERVER --> LOCAL)
-    D) Specific Sync - (GET) 
+    D) Basic Sync - (GET) 
     E) Erase Sync - (DELETE) (LOCAL --> SERVER) && (SERVER --> LOCAL)
 
     So basically : Whatever missed in A will be handled by B
@@ -122,19 +123,22 @@
 
 #EdgeCases 
 
-    1) If we have to hit different APIs for different column update in the same row : (In the tickets table if subject change requires to hit an API and desc change requires different API)
+    1) What if the reference of one table points to other table and local db don't have that table ? (Say ticket table has assignee id as a column and in the server side assignee id is the userid of users table)
 
-        Solution 1) Server should handle this since server has the reference of the old row it can easily check which column is updated.
-
-        Solution 2) In those scenerios we need to create a new model which must embed just the specialbasemodel (Id,RefVal,Synced,Updated) and a tag needs to be added in the main table column 'rp:specialtickets'
-
-    2) If an API updates two model in the server. 
+    2) If an API updates two model in the server. (Create Ticket API create a ticket and adds the current user to assignee table implicitly)
+       Is that format is good REST API format ? Or is it not ? 
 
     3) What if it really updates the server end and fails to update the changes in the localdb ?
 
     4) What if user changes his time in the local device ?
 
         Solution 1) Server will update the local time on each response.
+
+    5) Conflict of two users needs to be shown in UI. How ? What is the purpose ?
+
+    6) Tags vs Interface (Tags is too brutal.Use Interface in each class to convert server to db item. But I think tags are best)
+
+    7) Periodic needs to include GET first and then only it should post,put
 
 
 #Useful Links

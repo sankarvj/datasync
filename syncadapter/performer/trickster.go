@@ -42,7 +42,7 @@ func (s *Pro) CookForRemote(in interface{}) {
 }
 
 func (s *Pro) CookFromRemote(in interface{}) {
-	if inImplementsCooker(in) {
+	if inImplementsCooker(in) || inImplementsPasser(in) {
 		reflect.ValueOf(in).Elem().FieldByName("Key").SetInt(reflect.ValueOf(in).Elem().FieldByName("Id").Int())
 		reflect.ValueOf(in).Elem().FieldByName("Id").SetInt(0)
 		//Form references using tags
@@ -61,7 +61,7 @@ func (s *Pro) CookFromRemote(in interface{}) {
 			}
 		}
 	} else {
-		log.Println("No implementation of cooker found. Cannot convert it to local values")
+		log.Println("No implementation of cooker/passer found. Cannot convert it to local values")
 	}
 }
 
