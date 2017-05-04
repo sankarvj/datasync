@@ -13,11 +13,11 @@ type BaseModel struct {
 
 //Cooker interface
 type Cooker interface {
+	PrepareLocal(forced bool)
+	SetLocalId(id int64)
+	ServerKey() int64
 	UpdatedAt() int64
 	LocalId() int64
-	ServerKey() int64
-	SetLocalId(id int64)
-	PrepareLocal(forced bool)
 	Signal(technique int) bool
 }
 

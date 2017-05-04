@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gitlab.com/vjopensrc/datasync/goclient/gomob"
+	"sync"
 )
 
 func main() {
@@ -14,19 +15,24 @@ func main() {
 	//gomob.TicketCreateHandler(callback, "offfy subject 1", "description 1")
 
 	//fmt.Println("__________________________Note Create____________________________")
-	//gomob.NoteCreateHandler(callback, "lnote name", "note description", 296)
+	//gomob.NoteCreateHandler(callback, "lnote name", "note description", 313)
 
 	//fmt.Println("__________________________Ticket List____________________________")
-	gomob.TicketListHandler(callback)
+	//gomob.TicketListHandler(callback)
 
 	//fmt.Println("__________________________Note List____________________________")
-	//gomob.NoteListHandler(callback, 297)
+	gomob.NoteListHandler(callback, 314)
 
 	//fmt.Println("__________________________Ticket Edit____________________________")
 	//gomob.TicketEditHandler(callback, "layss", "sankar", 296)
 
 	//fmt.Println("____________________________Periodic Sync____________________________")
 	//gomob.PeriodicSync()
+
+	//Add it here so that the program will wait for go routines. Like normal scenerios
+	var wg sync.WaitGroup
+	wg.Add(1)
+	wg.Wait()
 
 }
 
@@ -38,7 +44,7 @@ func (f FrontendAdapter) DatabasePath() string {
 }
 
 func (f FrontendAdapter) Domain() string {
-	return "192.168.61.15:8080"
+	return "192.168.61.13:8080"
 }
 
 type CallBack struct {

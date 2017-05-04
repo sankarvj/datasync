@@ -4,7 +4,7 @@
     Performs datasync between client and server with some minimal design changes in the database. In the flow of data fetching it extracts the invariant code needed for sync logic in to a common place. 
     
     User has to write their own implementation to store local data and retrive server data. In between that they can call their methods via this adapter to achive the sync.
-
+1GeMxb9cgLpHkXJOmDvy90A3BQn-p774IRR40ng65Ki8
         oldsetup : mobile_client ----> controller ----> api ----> network ----> web_server
         newsetup : mobile_client ----> controller ----> adapter ----> api ----> network ----> web_server
 

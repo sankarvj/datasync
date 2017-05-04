@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	DOMAIN_NAME = "192.168.61.15:8080"
+	DOMAIN_NAME = "192.168.59.77:8080"
 )
 
 const (

@@ -3,8 +3,9 @@ package model
 import (
 	"encoding/json"
 	"gitlab.com/vjopensrc/datasync/goclient/api"
-	"gitlab.com/vjopensrc/datasync/syncadapter/core"
-	"gitlab.com/vjopensrc/datasync/syncadapter/performer"
+	"gitlab.com/vjopensrc/datasync/goclient/network"
+	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/core"
+	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/performer"
 	"log"
 	"time"
 )
@@ -20,10 +21,25 @@ type Note struct {
 func (note *Note) Create(callback ParallelClientCallback) {
 	pro := performer.CreatePro(InitDB())
 	//store it local
-	pro.Prepare(StoreNote, note)
+	note.Id = StoreNote(note)
+	log.Println("Local scope -- ", note)
+
 	//localnote := *note //save local instance before passing it to cook for server
-	if success := pro.Push(note); success {
+
+	channel := pro.ApiMeltDown(note)
+	log.Println("Server scope -- ", note)
+	response := createNoteAPI(note)
+	if response.Id == network.ResponseSuccess {
+		note, err := ParseNote(response.Outcome[0])
+		if err != nil {
+			close(channel)
+			return
+		}
+		log.Println("channel received")
+		channel <- &note
 		callback.OnResponseUpdated()
+	} else {
+		close(channel)
 	}
 }
 
@@ -34,26 +50,20 @@ func TicketDetail(callback ParallelClientCallback, ticketid int64) {
 	out, _ := json.Marshal(dbnotes)
 	callback.OnResponseReceived(string(out))
 	//API
-	databasechanged := false
 	outcome := api.NotelistAPI(pro.HotId("tickets", ticketid))
 	notes, _ := ParseNotes(outcome)
-	for i := 0; i < len(notes); i++ {
-		note := &notes[i]
-		//HOT to COLD conversion
-		dowhat := pro.WhatToDo(note, performer.PasserSlice(dbnotes))
-		switch dowhat {
-		case performer.CREATE:
-			databasechanged = true
-			pro.Prepare(StoreNote, note)
-			break
-		case performer.UPDATE:
-			databasechanged = true
-			UpdateNote(note)
-			break
-		}
+	newnotes, modifiednotes := pro.WhatToDoLogic1(notes, performer.PasserSlice(dbnotes))
+	newnotesparsed, _ := ParseNotes(newnotes)
+	modifiednotesnotesparsed, _ := ParseNotes(modifiednotes)
+	for i := 0; i < len(newnotesparsed); i++ {
+		StoreNote(&newnotesparsed[i])
 	}
 
-	if databasechanged {
+	for i := 0; i < len(modifiednotesnotesparsed); i++ {
+		UpdateNote(&modifiednotesnotesparsed[i])
+	}
+
+	if pro.DatabaseChanged {
 		callback.OnResponseUpdated()
 	}
 }
@@ -62,27 +72,30 @@ func (note *Note) Signal(technique int) bool {
 	var success bool
 	switch technique {
 	case performer.TECHNIQUE_BASIC_CREATE:
-		success = createNoteAPI(note)
+		//success = createNoteAPI(note)
 		break
 	}
 
 	return success
 }
 
-func createNoteAPI(note *Note) bool {
+func createNoteAPI(note *Note) network.Response {
+	var errorresponse = new(network.Response)
 	jsonbody, err := json.Marshal(note)
 	if err != nil {
 		log.Println("Can't marshal note")
-		return false
+		return *errorresponse
 	}
 	outcome, success := api.CreatNoteAPI(jsonbody)
 	if !success {
-		return false
+		return *errorresponse
 	}
 	*note, err = ParseNote(outcome)
 	if err != nil {
 		log.Println("Error parsing note")
-		return false
+		return *errorresponse
 	}
-	return true
+	errorresponse.Id = network.ResponseSuccess
+	errorresponse.Outcome = append(errorresponse.Outcome, *note)
+	return *errorresponse
 }

@@ -3,8 +3,8 @@ package model
 import (
 	"encoding/json"
 	"gitlab.com/vjopensrc/datasync/goclient/api"
-	"gitlab.com/vjopensrc/datasync/syncadapter/core"
-	"gitlab.com/vjopensrc/datasync/syncadapter/performer"
+	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/core"
+	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/performer"
 	"log"
 	"time"
 )
@@ -49,11 +49,19 @@ func TicketList(callback ParallelClientCallback) {
 	out, _ := json.Marshal(dbtickets)
 	callback.OnResponseReceived(string(out))
 	//API
-	databasechanged := false
 	outcome := api.TicketlistAPI()
 	tickets, _ := ParseTickets(outcome)
 
-	pro.WhatToDo1(tickets, performer.PasserSlice(dbtickets))
+	newitems, updateditems := pro.WhatToDoLogic1(tickets, performer.PasserSlice(dbtickets))
+
+	newTickets, _ := ParseTickets(newitems)
+	updatedTickets, _ := ParseTickets(updateditems)
+	storeTickets(newTickets)
+	modifyTickets(updatedTickets)
+	//store this to db and send call
+	if pro.DatabaseChanged {
+		callback.OnResponseUpdated()
+	}
 
 	//TODO MOVE THIS INSIDE ADAPTER
 	// for i := 0; i < len(tickets); i++ {
@@ -72,8 +80,21 @@ func TicketList(callback ParallelClientCallback) {
 	// 	}
 	// }
 
-	if databasechanged {
-		callback.OnResponseUpdated()
+}
+
+func storeTickets(newtickets []Ticket) {
+	for i := 0; i < len(newtickets); i++ {
+		newticket := newtickets[i]
+		log.Println("newticket ::: ", newticket.Key)
+		StoreTicket(&newticket)
+	}
+}
+
+func modifyTickets(modifiedtickets []Ticket) {
+	for i := 0; i < len(modifiedtickets); i++ {
+		modifiedticket := modifiedtickets[i]
+		log.Println("modifiedticket ::: ", modifiedticket.Id)
+		UpdateTicket(&modifiedticket)
 	}
 }
 

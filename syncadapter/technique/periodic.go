@@ -2,6 +2,7 @@ package technique
 
 //#Core goals
 //* pull changes in the background without affecting the user experiance
+//* push local changes to the server when there is a network reconnectivity event
 
 //#Needs server side implementation
 //* no

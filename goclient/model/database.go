@@ -107,7 +107,7 @@ var sql_ticket_update = `
 		Updated = ?,
 		Created = ?,
 		Synced = ? 
-		WHERE id = ?
+		WHERE Id = ?
 	`
 
 var sql_note_update = `
@@ -117,7 +117,7 @@ var sql_note_update = `
 		Updated = ?,
 		Created = ?,
 		Synced = ? 
-		WHERE id = ?
+		WHERE key = ?
 	`
 
 var dbpath string
@@ -176,7 +176,7 @@ func StoreTicket(ticket *Ticket) int64 {
 	}
 
 	var result sql.Result
-	result, err = stmt.Exec(ticket.Id, ticket.Subject, ticket.Desc, ticket.requester, ticket.agent, ticket.Updated, ticket.created, ticket.Synced)
+	result, err = stmt.Exec(ticket.Key, ticket.Subject, ticket.Desc, ticket.requester, ticket.agent, ticket.Updated, ticket.created, ticket.Synced)
 	if err != nil {
 		log.Println("database insert ticket sql err ", err)
 		return 0
@@ -226,7 +226,7 @@ func StoreNote(note *Note) int64 {
 	}
 
 	var result sql.Result
-	result, err = stmt.Exec(note.Id, note.Ticketid, note.Name, note.Desc, note.Updated, note.created, note.Synced)
+	result, err = stmt.Exec(note.Key, note.Ticketid, note.Name, note.Desc, note.Updated, note.created, note.Synced)
 	if err != nil {
 		log.Println("database insert note sql err ", err)
 		return 0

@@ -2,7 +2,7 @@ package gomob
 
 import (
 	"gitlab.com/vjopensrc/datasync/goclient/model"
-	"gitlab.com/vjopensrc/datasync/syncadapter/technique"
+	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/technique"
 )
 
 func init() {
