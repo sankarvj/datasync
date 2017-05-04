@@ -2,7 +2,7 @@ package performer
 
 import (
 	"fmt"
-	"gitlab.com/vjopensrc/datasync/syncadapter/core"
+	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/core"
 	"reflect"
 	"strings"
 )

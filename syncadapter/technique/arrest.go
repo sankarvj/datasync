@@ -1,7 +1,6 @@
 package technique
 
 //#Core goals
-//* It cannot enable alone. It can work along with periodic or impulse technique
 //* minimize server load
 //* really useful if periodic technique implemented using network changes and if network changes often occurs due to other conditions
 

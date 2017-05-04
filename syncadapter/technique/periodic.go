@@ -2,7 +2,6 @@ package technique
 
 //#Core goals
 //* pull changes in the background without affecting the user experiance
-//* push local changes to the server when there is a network reconnectivity event
 
 //#Needs server side implementation
 //* no
@@ -16,8 +15,8 @@ package technique
 
 import (
 	"database/sql"
-	"gitlab.com/vjopensrc/datasync/syncadapter/core"
-	"gitlab.com/vjopensrc/datasync/syncadapter/performer"
+	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/core"
+	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/performer"
 )
 
 type Periodic struct {

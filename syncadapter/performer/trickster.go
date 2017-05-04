@@ -1,7 +1,7 @@
 package performer
 
 import (
-	"gitlab.com/vjopensrc/datasync/syncadapter/core"
+	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/core"
 	"log"
 	"reflect"
 	"strconv"
@@ -45,6 +45,7 @@ func (s *Pro) CookFromRemote(in interface{}) {
 	if inImplementsCooker(in) || inImplementsPasser(in) {
 		reflect.ValueOf(in).Elem().FieldByName("Key").SetInt(reflect.ValueOf(in).Elem().FieldByName("Id").Int())
 		reflect.ValueOf(in).Elem().FieldByName("Id").SetInt(0)
+		reflect.ValueOf(in).Elem().FieldByName("Synced").SetBool(true)
 		//Form references using tags
 		objtype := reflect.TypeOf(in).Elem()
 		noOfFields := objtype.NumField()
