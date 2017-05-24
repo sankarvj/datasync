@@ -2,9 +2,9 @@ package model
 
 import (
 	"encoding/json"
-	"gitlab.com/vjopensrc/datasync/goclient/api"
-	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/core"
-	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/performer"
+	"github.com/sankarvj/sample_syncadapter_client/goclient/api"
+	"github.com/sankarvj/syncadapter/core"
+	"github.com/sankarvj/syncadapter/performer"
 	"log"
 	"time"
 )
@@ -98,18 +98,19 @@ func modifyTickets(modifiedtickets []Ticket) {
 	}
 }
 
-func (ticket *Ticket) Signal(technique int) bool {
+//Signal
+func (ticket *Ticket) Signal(technique core.Technique) bool {
 	var success bool
 	switch technique {
-	case performer.TECHNIQUE_BASIC_CREATE:
+	case core.BASIC_CREATE:
 		success = createAPI(ticket)
 		break
-	case performer.TECHNIQUE_BASIC_UPDATE:
+	case core.BASIC_UPDATE:
 		success = updateAPI(ticket)
 		break
-	case performer.TECHNIQUE_PERIODIC_SHOT:
-		syncFrozenData()
-		break
+		// case performer.TECHNIQUE_PERIODIC_SHOT:
+		// 	syncFrozenData()
+		// 	break
 	}
 	return success
 }

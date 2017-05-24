@@ -1,7 +1,7 @@
 package gomob
 
 import (
-	"gitlab.com/vjopensrc/datasync/goclient/model"
+	"github.com/sankarvj/sample_syncadapter_client/goclient/model"
 )
 
 func ClearEveryThingFrom(tablename string) {

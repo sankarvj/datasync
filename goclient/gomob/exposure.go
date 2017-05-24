@@ -1,8 +1,8 @@
 package gomob
 
 import (
-	"gitlab.com/vjopensrc/datasync/goclient/model"
-	"gitlab.com/vjopensrc/datasync/goclient/network"
+	"github.com/sankarvj/sample_syncadapter_client/goclient/model"
+	"github.com/sankarvj/sample_syncadapter_client/goclient/network"
 )
 
 var frontendAdapter IntfFrontendAdapter

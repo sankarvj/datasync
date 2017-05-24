@@ -1,7 +1,7 @@
 package api
 
 import (
-	"gitlab.com/vjopensrc/datasync/goclient/network"
+	"github.com/sankarvj/sample_syncadapter_client/goclient/network"
 	"strconv"
 )
 

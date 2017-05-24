@@ -1,8 +1,8 @@
 package gomob
 
 import (
-	"gitlab.com/vjopensrc/datasync/goclient/model"
-	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/technique"
+	"github.com/sankarvj/sample_syncadapter_client/goclient/model"
+	"github.com/sankarvj/syncadapter/technique"
 )
 
 func init() {

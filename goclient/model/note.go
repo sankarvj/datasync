@@ -2,10 +2,10 @@ package model
 
 import (
 	"encoding/json"
-	"gitlab.com/vjopensrc/datasync/goclient/api"
-	"gitlab.com/vjopensrc/datasync/goclient/network"
-	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/core"
-	"gitlab.com/vjsideprojects/seekite_client_logic/syncadapter/performer"
+	"github.com/sankarvj/sample_syncadapter_client/goclient/api"
+	"github.com/sankarvj/sample_syncadapter_client/goclient/network"
+	"github.com/sankarvj/syncadapter/core"
+	"github.com/sankarvj/syncadapter/performer"
 	"log"
 	"time"
 )
@@ -68,15 +68,15 @@ func TicketDetail(callback ParallelClientCallback, ticketid int64) {
 	}
 }
 
-func (note *Note) Signal(technique int) bool {
-	var success bool
+//Signal
+func (note *Note) Signal(technique core.Technique) bool {
 	switch technique {
-	case performer.TECHNIQUE_BASIC_CREATE:
-		//success = createNoteAPI(note)
-		break
-	}
+	case core.BASIC_CREATE:
 
-	return success
+	case core.BASIC_UPDATE:
+
+	}
+	return false
 }
 
 func createNoteAPI(note *Note) network.Response {

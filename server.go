@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"gitlab.com/vjopensrc/datasync/goclient/gomob"
+	"github.com/sankarvj/sample_syncadapter_client/goclient/gomob"
 	"sync"
 )
 
