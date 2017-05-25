@@ -1,5 +1,5 @@
 
-#sample sync adapter
+# sample sync adapter
 
 
 
